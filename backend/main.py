@@ -3,8 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import Base, get_engine
 from models import Task, Activity, Settings
 from routes import activities, tasks, reports, settings
-from init_db import init_db
-import os
 
 app = FastAPI(title="Time Tracker API")
 
@@ -17,8 +15,6 @@ app.add_middleware(
 )
 
 Base.metadata.create_all(bind=get_engine())
-
-init_db()
 
 app.include_router(activities.router)
 app.include_router(tasks.router)
