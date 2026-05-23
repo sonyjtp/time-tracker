@@ -14,6 +14,9 @@ function Tasks() {
   const [endDate, setEndDate] = useState('')
   const [sortColumn, setSortColumn] = useState('name')
   const [sortAscending, setSortAscending] = useState(true)
+  const [inlineEditingId, setInlineEditingId] = useState(null)
+  const [inlineEditField, setInlineEditField] = useState(null)
+  const [inlineEditValue, setInlineEditValue] = useState('')
 
   useEffect(() => {
     loadReferenceDate()
@@ -138,6 +141,67 @@ function Tasks() {
     }
   }
 
+  const handleStartInlineEdit = (task, field) => {
+    setInlineEditingId(task.id)
+    setInlineEditField(field)
+    setInlineEditValue(task[field] || '')
+  }
+
+  const handleSaveInlineEdit = async (taskId) => {
+    if (!inlineEditField) return
+
+    const updatedData = {
+      [inlineEditField]: inlineEditValue
+    }
+
+    try {
+      await tasks.update(taskId, updatedData)
+      setInlineEditingId(null)
+      setInlineEditField(null)
+      loadTasks()
+    } catch (err) {
+      setError('Failed to update task: ' + err.message)
+    }
+  }
+
+  const handleCancelInlineEdit = () => {
+    setInlineEditingId(null)
+    setInlineEditField(null)
+    setInlineEditValue('')
+  }
+
+  const handleKeyDown = (e, taskId) => {
+    if (e.key === 'Enter') {
+      handleSaveInlineEdit(taskId)
+    } else if (e.key === 'Escape') {
+      handleCancelInlineEdit()
+    }
+  }
+
+  const renderEditableCell = (task, field, displayValue) => {
+    const isEditing = inlineEditingId === task.id && inlineEditField === field
+
+    return isEditing ? (
+      <input
+        autoFocus
+        type="text"
+        value={inlineEditValue}
+        onChange={(e) => setInlineEditValue(e.target.value)}
+        onBlur={() => handleSaveInlineEdit(task.id)}
+        onKeyDown={(e) => handleKeyDown(e, task.id)}
+        className="inline-edit-input"
+      />
+    ) : (
+      <span
+        onClick={() => handleStartInlineEdit(task, field)}
+        className="editable-cell"
+        title="Click to edit"
+      >
+        {displayValue || '-'}
+      </span>
+    )
+  }
+
   if (loading) return <div className="loading">Loading...</div>
 
   return (
@@ -204,10 +268,10 @@ function Tasks() {
           <tbody>
             {getSortedTasks().map(task => (
               <tr key={task.id}>
-                <td>{task.name}</td>
-                <td>{task.type}</td>
-                <td>{task.sub_type}</td>
-                <td>{task.source}</td>
+                <td>{renderEditableCell(task, 'name', task.name)}</td>
+                <td>{renderEditableCell(task, 'type', task.type)}</td>
+                <td>{renderEditableCell(task, 'sub_type', task.sub_type)}</td>
+                <td>{renderEditableCell(task, 'source', task.source)}</td>
                 <td>{task.start_date ? (() => {
                   const d = new Date(task.start_date);
                   return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
