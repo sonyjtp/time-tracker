@@ -7,7 +7,7 @@ repos:
         entry: python backend/update_coverage.py
         language: system
         pass_filenames: false
-        stages: [commit]
+        stages: [pre-commit]
         verbose: true
 
       - id: coverage-update-frontend
@@ -15,7 +15,7 @@ repos:
         entry: node frontend/update-coverage.js
         language: system
         pass_filenames: false
-        stages: [commit]
+        stages: [pre-commit]
         verbose: true
 
       - id: coverage-backend
@@ -23,7 +23,7 @@ repos:
         entry: python backend/check_coverage.py
         language: system
         pass_filenames: false
-        stages: [commit]
+        stages: [pre-commit]
         verbose: true
 
       - id: coverage-frontend-check
@@ -31,7 +31,7 @@ repos:
         entry: node frontend/check-coverage.js
         language: system
         pass_filenames: false
-        stages: [commit]
+        stages: [pre-commit]
         verbose: true
 
   # Code formatting and linting for Python
@@ -39,7 +39,7 @@ repos:
     rev: 23.9.1
     hooks:
       - id: black
-        language_version: python3.11
+        language_version: python3.14
         args: ['--line-length=100']
 
   - repo: https://github.com/PyCQA/isort
