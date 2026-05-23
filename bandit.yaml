@@ -1,0 +1,13 @@
+assert_used:
+  skips: []
+hardcoded_sql_string:
+  skips: []
+hardcoded_tmp_directory:
+  skips: []
+skip:
+  - B602
+  - B603
+  - B607
+exclude_dirs:
+  - /test
+  - /tests

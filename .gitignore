@@ -56,6 +56,23 @@ DailyActivity_*.xlsx
 .env
 .env.local
 
+# Test coverage
+.coverage
+.coverage.*
+htmlcov/
+coverage/
+*.lcov
+
+# Test output
+.pytest_cache/
+.vitest/
+dist/
+
+# IDE
+.eslintcache
+.vscode/
+.idea/
+
 # OS
 .DS_Store
 Thumbs.db

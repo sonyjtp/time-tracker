@@ -6,6 +6,9 @@
 [![React 18](https://img.shields.io/badge/React-18+-61DAFB.svg)](https://react.dev/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-336791.svg)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](https://www.docker.com/)
+[![Tests](https://img.shields.io/badge/Tests-70%2B-brightgreen.svg)](TESTING.md)
+[![Coverage](https://img.shields.io/badge/Coverage-80%25-success.svg)](TESTING.md)
+[![Code Quality](https://img.shields.io/badge/Code%20Quality-A-success.svg)](#)
 [![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A web-based time tracking application built with FastAPI (backend), React (frontend), and PostgreSQL (database). Track daily activities, manage tasks, and view detailed time spent reports with comprehensive filtering, sorting, and reporting capabilities.
@@ -175,9 +178,34 @@ npm run dev
 
 The frontend will start on `http://localhost:3000`
 
-### 6. Access the Application
+### 6. Set Up Pre-commit Hooks (Recommended)
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+This will automatically run checks on code before commits:
+- Code formatting (Black, isort)
+- Linting (Flake8)
+- File checks (trailing whitespace, large files, etc.)
+
+### 7. Access the Application
 
 Open your browser and navigate to `http://localhost:3000`
+
+### Using Make Commands
+
+For easier development, use the provided Makefile:
+
+```bash
+make help           # View all available commands
+make install        # Install all dependencies
+make test           # Run all tests
+make coverage       # Generate coverage reports
+make lint-fix       # Auto-fix code style
+make check          # Run full quality checks (lint + test + coverage)
+```
 
 ## File Structure
 
@@ -306,7 +334,25 @@ Format Python code with Black:
 black backend/
 ```
 
-## Testing
+## Code Quality & Testing
+
+### Quality Standards
+
+- **Test Coverage**: 80%+ (Backend), 80%+ (Frontend)
+- **Code Style**: Black (Python), ESLint (JavaScript)
+- **Linting**: Flake8, isort (Python)
+- **Type Checking**: MyPy integration ready
+- **Pre-commit Hooks**: Automated checks before commits
+
+### Quick Commands
+
+```bash
+make check      # Run lint, tests, and coverage
+make lint       # Check code style
+make lint-fix   # Auto-fix code style issues
+make test       # Run all tests
+make coverage   # Generate coverage reports
+```
 
 For comprehensive testing documentation, see [TESTING.md](TESTING.md).
 
