@@ -1,19 +1,20 @@
 import openpyxl
 from datetime import datetime
 from pathlib import Path
-from sqlalchemy.orm import Session
 from database import get_engine, get_session, Base
-from models import Task, Activity
+from models import Task, Activity, Settings
+
 
 def load_excel_data():
     import os
+
     home = str(Path.home())
-    downloads = os.path.join(home, 'Downloads/OneDrive_1_5-23-2026')
-    project_root = '..'
+    downloads = os.path.join(home, "Downloads/OneDrive_1_5-23-2026")
+    project_root = ".."
 
     excel_files = []
     for year in [2022, 2023, 2024, 2025, 2026]:
-        filename = f'DailyActivity_{year}.xlsx'
+        filename = f"DailyActivity_{year}.xlsx"
         # Check project root first, then Downloads
         project_path = os.path.join(project_root, filename)
         downloads_path = os.path.join(downloads, filename)
@@ -36,7 +37,7 @@ def load_excel_data():
         wb = openpyxl.load_workbook(excel_file, data_only=True)
 
         try:
-            tasks_sheet = wb['task description']
+            tasks_sheet = wb["task description"]
         except KeyError:
             continue
 
@@ -57,10 +58,10 @@ def load_excel_data():
             if not existing:
                 task = Task(
                     name=task_name,
-                    type=task_type or '',
-                    sub_type=sub_type or '',
-                    source=source or '',
-                    links=links
+                    type=task_type or "",
+                    sub_type=sub_type or "",
+                    source=source or "",
+                    links=links,
                 )
                 db.add(task)
                 db.flush()
@@ -80,12 +81,14 @@ def load_excel_data():
         wb = openpyxl.load_workbook(excel_file, data_only=True)
 
         try:
-            activity_sheet = wb['activity']
+            activity_sheet = wb["activity"]
         except KeyError:
             continue
 
         file_activity_count = 0
-        for row_idx, row in enumerate(activity_sheet.iter_rows(min_row=2, max_row=activity_sheet.max_row, values_only=True), 2):
+        for row_idx, row in enumerate(
+            activity_sheet.iter_rows(min_row=2, max_row=activity_sheet.max_row, values_only=True), 2
+        ):
             date_cell = row[0]
             task_name_cell = row[3]
             start_time_cell = row[4]
@@ -107,11 +110,15 @@ def load_excel_data():
             if not date_val:
                 continue
 
-            existing = db.query(Activity).filter(
-                Activity.task_id == task_id,
-                Activity.date == date_val,
-                Activity.start_time == start_time_cell
-            ).first()
+            existing = (
+                db.query(Activity)
+                .filter(
+                    Activity.task_id == task_id,
+                    Activity.date == date_val,
+                    Activity.start_time == start_time_cell,
+                )
+                .first()
+            )
 
             if not existing:
                 activity = Activity(
@@ -120,7 +127,7 @@ def load_excel_data():
                     start_time=start_time_cell,
                     end_time=end_time_cell,
                     comments=comments_cell,
-                    links=links_cell
+                    links=links_cell,
                 )
                 db.add(activity)
                 activity_count += 1
@@ -137,22 +144,34 @@ def load_excel_data():
     db.close()
     print("✓ Initial data load complete!\n")
 
+
 def init_db():
     """Initialize database - creates tables and loads Excel data on first run only"""
     Base.metadata.create_all(bind=get_engine())
 
     db = get_session()
-    task_count = db.query(Task).count()
-    activity_count = db.query(Activity).count()
-    db.close()
 
-    if task_count == 0:
+    # Check if data has already been loaded (using a persistent flag)
+    data_loaded_flag = db.query(Settings).filter(Settings.key == "excel_data_loaded").first()
+
+    if not data_loaded_flag:
         # First run - load data from Excel files
-        print("🔄 First startup: Loading data from Excel files...\n")
+        print("🔄 Loading data from Excel files (one-time)...\n")
         load_excel_data()
+
+        # Mark data as loaded so it never loads again
+        loaded_flag = Settings(key="excel_data_loaded", value="true")
+        db.add(loaded_flag)
+        db.commit()
+        print("✅ Data loaded successfully. This will not happen again.\n")
     else:
         # Data already loaded - just skip to using the database
+        task_count = db.query(Task).count()
+        activity_count = db.query(Activity).count()
         print(f"✅ Using existing database ({task_count} tasks, {activity_count} activities)\n")
+
+    db.close()
+
 
 if __name__ == "__main__":
     init_db()
