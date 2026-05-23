@@ -75,15 +75,18 @@ test-frontend:
 
 # Coverage
 coverage:
-	@echo "Generating backend coverage report..."
-	cd backend && pytest --cov=. --cov-report=html --cov-report=term-missing
+	@echo "Generating backend coverage report (min 85%)..."
+	cd backend && python update_coverage.py
 	@echo ""
-	@echo "Generating frontend coverage report..."
-	cd frontend && npm run test:coverage
+	@echo "Generating frontend coverage report (min 85%)..."
+	cd frontend && node update-coverage.js
 	@echo ""
 	@echo "✓ Coverage reports generated"
 	@echo "Backend:  backend/htmlcov/index.html"
 	@echo "Frontend: frontend/coverage/index.html"
+	@echo ""
+	@echo "Note: Coverage minimum is 85% for pre-commit checks"
+	@echo "      README.md badges automatically updated"
 
 # Linting
 lint:

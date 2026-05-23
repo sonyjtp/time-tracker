@@ -7,8 +7,9 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-336791.svg)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](https://www.docker.com/)
 [![Tests](https://img.shields.io/badge/Tests-70%2B-brightgreen.svg)](TESTING.md)
-[![Coverage](https://img.shields.io/badge/Coverage-80%25-success.svg)](TESTING.md)
+[![Coverage](https://img.shields.io/badge/Coverage-85%25-success.svg)](TESTING.md)
 [![Code Quality](https://img.shields.io/badge/Code%20Quality-A-success.svg)](#)
+[![Pre-commit Checks](https://img.shields.io/badge/Pre%E2%80%90commit-Enabled-blue.svg)](#)
 [![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A web-based time tracking application built with FastAPI (backend), React (frontend), and PostgreSQL (database). Track daily activities, manage tasks, and view detailed time spent reports with comprehensive filtering, sorting, and reporting capabilities.
@@ -185,10 +186,11 @@ pip install pre-commit
 pre-commit install
 ```
 
-This will automatically run checks on code before commits:
-- Code formatting (Black, isort)
-- Linting (Flake8)
-- File checks (trailing whitespace, large files, etc.)
+This will automatically run comprehensive checks before every commit:
+- **Coverage Update & Check** ⭐ - Generate reports, update badges, verify 85%+ coverage
+- **Code Formatting** - Black, isort
+- **Linting** - Flake8, Bandit security checks
+- **File Checks** - Trailing whitespace, large files, YAML/JSON validation
 
 ### 7. Access the Application
 
@@ -338,11 +340,11 @@ black backend/
 
 ### Quality Standards
 
-- **Test Coverage**: 80%+ (Backend), 80%+ (Frontend)
+- **Test Coverage**: 85%+ enforced (Backend & Frontend) ⭐
 - **Code Style**: Black (Python), ESLint (JavaScript)
 - **Linting**: Flake8, isort (Python)
 - **Type Checking**: MyPy integration ready
-- **Pre-commit Hooks**: Automated checks before commits
+- **Pre-commit Hooks**: Automated checks + coverage verification before commits
 
 ### Quick Commands
 

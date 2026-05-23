@@ -1,23 +1,11 @@
 import pytest
 from datetime import date, time
-from sqlalchemy.orm import Session
 from models import Task, Activity
-from database import Base, engine, SessionLocal
-from main import app
-from fastapi.testclient import TestClient
 
-client = TestClient(app)
-
-@pytest.fixture
-def db():
-    Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
-    yield db
-    db.close()
-    Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture
 def sample_task(db):
+    """Create a sample task for testing"""
     task = Task(
         name="Test Task",
         type="Development",
@@ -27,9 +15,10 @@ def sample_task(db):
     )
     db.add(task)
     db.commit()
+    db.refresh(task)
     return task
 
-def test_create_activity(sample_task):
+def test_create_activity(client, sample_task):
     response = client.post("/api/activities", json={
         "task_id": sample_task.id,
         "date": "2026-05-23",
@@ -41,7 +30,7 @@ def test_create_activity(sample_task):
     assert response.status_code == 200
     assert response.json()["task_id"] == sample_task.id
 
-def test_get_activities_by_date(sample_task):
+def test_get_activities_by_date(client, sample_task):
     # Create activity
     client.post("/api/activities", json={
         "task_id": sample_task.id,
@@ -55,7 +44,7 @@ def test_get_activities_by_date(sample_task):
     assert response.status_code == 200
     assert len(response.json()) > 0
 
-def test_get_activities_filter_by_task(sample_task):
+def test_get_activities_filter_by_task(client, sample_task):
     # Create activity
     client.post("/api/activities", json={
         "task_id": sample_task.id,
@@ -69,7 +58,7 @@ def test_get_activities_filter_by_task(sample_task):
     assert response.status_code == 200
     assert len(response.json()) > 0
 
-def test_update_activity(sample_task, db):
+def test_update_activity(client, sample_task, db):
     # Create activity
     activity = Activity(
         task_id=sample_task.id,
@@ -79,6 +68,7 @@ def test_update_activity(sample_task, db):
     )
     db.add(activity)
     db.commit()
+    db.refresh(activity)
 
     # Update activity
     response = client.put(f"/api/activities/{activity.id}", json={
@@ -90,7 +80,7 @@ def test_update_activity(sample_task, db):
     })
     assert response.status_code == 200
 
-def test_delete_activity(sample_task, db):
+def test_delete_activity(client, sample_task, db):
     # Create activity
     activity = Activity(
         task_id=sample_task.id,
@@ -109,14 +99,14 @@ def test_delete_activity(sample_task, db):
     response = client.get("/api/activities?target_date=2026-05-23")
     assert len(response.json()) == 0
 
-def test_activity_missing_required_fields(sample_task):
+def test_activity_missing_required_fields(client, sample_task):
     response = client.post("/api/activities", json={
         "task_id": sample_task.id,
         "date": "2026-05-23"
     })
     assert response.status_code == 422
 
-def test_activity_with_invalid_task_id():
+def test_activity_with_invalid_task_id(client):
     response = client.post("/api/activities", json={
         "task_id": 99999,
         "date": "2026-05-23",

@@ -1,28 +1,52 @@
 import pytest
-from sqlalchemy.orm import Session
-from database import Base, engine, SessionLocal
+from datetime import date, time
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+from fastapi.testclient import TestClient
+from models import Base, Task, Activity
+from database import get_db
+from main import app
 
 
-@pytest.fixture(scope="session")
-def db_engine():
-    """Create test database engine"""
+@pytest.fixture(scope="function")
+def db():
+    """Create test database session with fresh SQLite in-memory database"""
+    # Create in-memory SQLite engine for testing
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+
+    # Create all tables
     Base.metadata.create_all(bind=engine)
-    yield engine
+
+    # Create session factory
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    test_session = TestingSessionLocal()
+
+    # Override the get_db dependency in FastAPI app
+    def override_get_db():
+        try:
+            yield test_session
+        finally:
+            test_session.close()
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    yield test_session
+
+    # Cleanup
+    test_session.close()
     Base.metadata.drop_all(bind=engine)
+    app.dependency_overrides.clear()
 
 
-@pytest.fixture
-def db(db_engine):
-    """Create test database session"""
-    connection = db_engine.connect()
-    transaction = connection.begin()
-    session = SessionLocal(bind=connection)
-
-    yield session
-
-    session.close()
-    transaction.rollback()
-    connection.close()
+@pytest.fixture(scope="function")
+def client(db):
+    """Create test client with overridden database"""
+    return TestClient(app)
 
 
 @pytest.fixture

@@ -1,4 +1,39 @@
 repos:
+  # Custom coverage update and checks
+  - repo: local
+    hooks:
+      - id: coverage-update-backend
+        name: Backend Coverage Update
+        entry: python backend/update_coverage.py
+        language: system
+        pass_filenames: false
+        stages: [commit]
+        verbose: true
+
+      - id: coverage-update-frontend
+        name: Frontend Coverage Update
+        entry: node frontend/update-coverage.js
+        language: system
+        pass_filenames: false
+        stages: [commit]
+        verbose: true
+
+      - id: coverage-backend
+        name: Backend Coverage Check
+        entry: python backend/check_coverage.py
+        language: system
+        pass_filenames: false
+        stages: [commit]
+        verbose: true
+
+      - id: coverage-frontend-check
+        name: Frontend Coverage Check
+        entry: node frontend/check-coverage.js
+        language: system
+        pass_filenames: false
+        stages: [commit]
+        verbose: true
+
   # Code formatting and linting for Python
   - repo: https://github.com/psf/black
     rev: 23.9.1

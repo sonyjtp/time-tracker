@@ -54,15 +54,25 @@ This document summarizes the complete quality control and testing infrastructure
 Automatically run on every `git commit`:
 
 ### Enabled Hooks
-1. **Black** - Auto-format Python code
-2. **isort** - Auto-sort Python imports
-3. **Flake8** - Check Python syntax/style
-4. **Bandit** - Security vulnerability scan
-5. **Trailing Whitespace** - Remove trailing whitespace
-6. **End of File Fixer** - Fix file endings
-7. **Check YAML** - Validate YAML syntax
-8. **Check JSON** - Validate JSON syntax
-9. **Check Large Files** - Prevent large file commits
+
+**Coverage (runs full test suite & updates reports)** ⭐
+1. **Coverage Update - Backend** - Generate reports, update README badges
+2. **Coverage Update - Frontend** - Generate reports, update README badges
+3. **Coverage Check - Backend** - Verify 85%+ test coverage
+4. **Coverage Check - Frontend** - Verify 85%+ test coverage
+
+**Code Quality**
+5. **Black** - Auto-format Python code
+6. **isort** - Auto-sort Python imports
+7. **Flake8** - Check Python syntax/style
+8. **Bandit** - Security vulnerability scan
+
+**File Checks**
+9. **Trailing Whitespace** - Remove trailing whitespace
+10. **End of File Fixer** - Fix file endings
+11. **Check YAML** - Validate YAML syntax
+12. **Check JSON** - Validate JSON syntax
+13. **Check Large Files** - Prevent large file commits (max 1MB)
 
 ### Setup Pre-commit Hooks
 
@@ -170,20 +180,20 @@ make clean             # Clean build artifacts
 
 ## Coverage Thresholds
 
-### Backend (Python)
+### Backend (Python) - Required for Pre-commit ⭐
 ```
-Lines:       ≥ 80%
-Functions:   ≥ 80%
-Branches:    ≥ 80%
-Statements:  ≥ 80%
+Lines:       ≥ 85%
+Functions:   ≥ 85%
+Branches:    ≥ 85%
+Statements:  ≥ 85%
 ```
 
-### Frontend (JavaScript)
+### Frontend (JavaScript) - Required for Pre-commit ⭐
 ```
-Lines:       ≥ 80%
-Functions:   ≥ 80%
-Branches:    ≥ 75%
-Statements:  ≥ 80%
+Lines:       ≥ 85%
+Functions:   ≥ 85%
+Branches:    ≥ 80%
+Statements:  ≥ 85%
 ```
 
 ### CI Failure Conditions

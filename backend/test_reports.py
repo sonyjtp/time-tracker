@@ -1,20 +1,6 @@
 import pytest
 from datetime import date, time
-from sqlalchemy.orm import Session
 from models import Task, Activity
-from database import Base, engine, SessionLocal
-from main import app
-from fastapi.testclient import TestClient
-
-client = TestClient(app)
-
-@pytest.fixture
-def db():
-    Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
-    yield db
-    db.close()
-    Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture
 def sample_data(db):
@@ -25,6 +11,9 @@ def sample_data(db):
 
     db.add_all([task1, task2, task3])
     db.commit()
+    db.refresh(task1)
+    db.refresh(task2)
+    db.refresh(task3)
 
     # Create activities
     activity1 = Activity(
@@ -57,7 +46,7 @@ def sample_data(db):
 
     return {"task1": task1, "task2": task2, "task3": task3}
 
-def test_time_spent_summary(sample_data):
+def test_time_spent_summary(client, sample_data):
     response = client.get("/api/reports/time-spent-summary")
     assert response.status_code == 200
     data = response.json()
@@ -68,7 +57,7 @@ def test_time_spent_summary(sample_data):
     assert task1_summary is not None
     assert task1_summary["total_hours"] == 5.0  # 2 hours + 3 hours
 
-def test_time_spent_summary_with_date_range(sample_data):
+def test_time_spent_summary_with_date_range(client, sample_data):
     response = client.get("/api/reports/time-spent-summary?start_date=2026-05-20&end_date=2026-05-20")
     assert response.status_code == 200
     data = response.json()
@@ -78,7 +67,7 @@ def test_time_spent_summary_with_date_range(sample_data):
     assert task1_summary is not None
     assert task1_summary["total_hours"] == 2.0  # Only on 2026-05-20
 
-def test_time_spent_daily(sample_data):
+def test_time_spent_daily(client, sample_data):
     response = client.get("/api/reports/time-spent-daily")
     assert response.status_code == 200
     data = response.json()
@@ -88,7 +77,7 @@ def test_time_spent_daily(sample_data):
     dates = set(item["date"] for item in data)
     assert len(dates) > 0
 
-def test_time_spent_daily_with_date_range(sample_data):
+def test_time_spent_daily_with_date_range(client, sample_data):
     response = client.get("/api/reports/time-spent-daily?start_date=2026-05-20&end_date=2026-05-20")
     assert response.status_code == 200
     data = response.json()
@@ -97,23 +86,24 @@ def test_time_spent_daily_with_date_range(sample_data):
     for item in data:
         assert item["date"] == "2026-05-20"
 
-def test_time_spent_daily_date_order(sample_data):
+def test_time_spent_daily_date_order(client, sample_data):
     response = client.get("/api/reports/time-spent-daily")
     assert response.status_code == 200
     data = response.json()
 
-    # Results should be sorted by date
-    dates = [item["date"] for item in data]
-    assert dates == sorted(dates)
+    # Results should be sorted by date (as strings in ISO format)
+    if len(data) > 1:
+        dates = [item["date"] for item in data]
+        assert dates == sorted(dates)
 
-def test_empty_date_range(sample_data):
+def test_empty_date_range(client, sample_data):
     response = client.get("/api/reports/time-spent-summary?start_date=2026-06-01&end_date=2026-06-30")
     assert response.status_code == 200
     data = response.json()
     # Should return empty list for date range with no activities
     assert len(data) == 0
 
-def test_single_day_summary(sample_data):
+def test_single_day_summary(client, sample_data):
     response = client.get("/api/reports/time-spent-summary?start_date=2026-05-21&end_date=2026-05-21")
     assert response.status_code == 200
     data = response.json()
@@ -121,7 +111,7 @@ def test_single_day_summary(sample_data):
     # On 2026-05-21, task1 has 3 hours and task3 has 3 hours
     assert len(data) == 2
 
-def test_time_spent_hours_calculation(sample_data):
+def test_time_spent_hours_calculation(client, sample_data):
     response = client.get("/api/reports/time-spent-summary?start_date=2026-05-20&end_date=2026-05-20")
     assert response.status_code == 200
     data = response.json()
@@ -131,7 +121,7 @@ def test_time_spent_hours_calculation(sample_data):
         assert isinstance(item["total_hours"], (int, float))
         assert item["total_hours"] > 0
 
-def test_no_activities(db):
+def test_no_activities(client, db):
     response = client.get("/api/reports/time-spent-summary")
     assert response.status_code == 200
     data = response.json()

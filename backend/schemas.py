@@ -4,24 +4,24 @@ from typing import Optional
 
 class TaskCreate(BaseModel):
     name: str
-    type: str
-    sub_type: str
-    source: str
+    type: Optional[str] = ""
+    sub_type: Optional[str] = ""
+    source: Optional[str] = ""
     links: Optional[str] = None
 
 class TaskUpdate(BaseModel):
     name: Optional[str] = None
-    type: Optional[str] = None
-    sub_type: Optional[str] = None
-    source: Optional[str] = None
+    type: Optional[str] = ""
+    sub_type: Optional[str] = ""
+    source: Optional[str] = ""
     links: Optional[str] = None
 
 class TaskResponse(BaseModel):
     id: int
     name: str
-    type: str
-    sub_type: str
-    source: str
+    type: Optional[str] = ""
+    sub_type: Optional[str] = ""
+    source: Optional[str] = ""
     links: Optional[str]
     start_date: Optional[date] = None
     end_date: Optional[date] = None
@@ -63,7 +63,7 @@ class TimeSpentByTask(BaseModel):
     total_hours: float
 
 class TimeSpentByDay(BaseModel):
-    date: date
+    date: str  # Store as string for JSON serialization
     task_id: int
     task_name: str
     hours: float

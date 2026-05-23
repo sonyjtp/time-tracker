@@ -110,7 +110,7 @@ def get_time_spent_daily(
         task = next((t for t in tasks if t.id == activity.task_id), None)
         duration = calculate_duration_hours(activity.start_time, activity.end_time)
         result.append(TimeSpentByDay(
-            date=activity.date,
+            date=activity.date.isoformat() if activity.date else "",
             task_id=activity.task_id,
             task_name=task.name if task else "Unknown",
             hours=duration

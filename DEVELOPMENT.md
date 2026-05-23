@@ -60,15 +60,20 @@ Pre-commit hooks automatically run checks before commits. They ensure code quali
 
 ### Installed Hooks
 
-- **black**: Code formatting
-- **isort**: Import sorting
+**Coverage Checks** ⭐
+- **backend coverage**: Verify 85%+ test coverage (runs full test suite)
+- **frontend coverage**: Verify 85%+ test coverage (runs full test suite)
+
+**Code Quality**
+- **black**: Auto-format Python code
+- **isort**: Auto-sort Python imports
 - **flake8**: Python linting
 - **bandit**: Security checks
 - **trailing-whitespace**: Remove trailing whitespace
 - **end-of-file-fixer**: Fix file endings
 - **check-yaml**: Validate YAML
 - **check-json**: Validate JSON
-- **check-large-files**: Prevent large file commits
+- **check-large-files**: Prevent large file commits (max 1MB)
 
 ### Setup
 
@@ -183,14 +188,23 @@ refactor: simplify filtering logic
 
 ### Pre-commit Workflow
 
-1. Make changes to code
+1. Make changes to code and write tests
 2. Stage changes: `git add .`
-3. Pre-commit hooks run automatically
+3. Pre-commit hooks run automatically:
+   - Coverage checks run full test suite (⏱️ ~10-15 seconds)
+   - Code formatting checks
+   - Linting checks
+   - Security checks
 4. If checks fail:
-   - Fix issues (formatter auto-fixes some)
+   - Fix issues:
+     - Coverage fail: Add/improve tests to reach 85%
+     - Format fail: Auto-fixed, stage again
+     - Lint fail: Fix manually or auto-fix with `make lint-fix`
    - Stage again: `git add .`
    - Commit again
-5. If all checks pass: commit succeeds
+5. If all checks pass: commit succeeds ✅
+
+**Note**: Pre-commit coverage checks run the full test suite, not just changed files. This ensures comprehensive coverage throughout the application.
 
 ## Testing Guidelines
 
