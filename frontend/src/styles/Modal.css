@@ -91,6 +91,59 @@
   border-left: 4px solid #c0392b;
 }
 
+.autocomplete-container {
+  position: relative;
+  width: 100%;
+}
+
+.autocomplete-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #bdc3c7;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.autocomplete-option {
+  padding: 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid #ecf0f1;
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+
+.autocomplete-option:hover {
+  background-color: #ecf0f1;
+}
+
+.autocomplete-option:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-option.disabled {
+  cursor: default;
+  color: #95a5a6;
+  font-style: italic;
+}
+
+.autocomplete-option.disabled:hover {
+  background-color: transparent;
+}
+
+.task-selected {
+  color: #27ae60;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
 @media (max-width: 768px) {
   .modal-content {
     width: 95%;

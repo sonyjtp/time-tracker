@@ -10,11 +10,34 @@ function ActivityForm({ activity, tasks, date, onSave, onClose }) {
   }
 
   const [taskId, setTaskId] = useState(activity?.task_id || '')
+  const [taskSearch, setTaskSearch] = useState(
+    activity ? tasks.find(t => t.id === activity.task_id)?.name || '' : ''
+  )
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const [startTime, setStartTime] = useState(activity?.start_time || getCurrentTime())
   const [endTime, setEndTime] = useState(activity?.end_time || '')
   const [comments, setComments] = useState(activity?.comments || '')
   const [links, setLinks] = useState(activity?.links || '')
   const [error, setError] = useState(null)
+
+  const getFilteredTasks = () => {
+    if (!taskSearch) return tasks.sort((a, b) => a.name.localeCompare(b.name))
+    return tasks
+      .filter(task => task.name.toLowerCase().includes(taskSearch.toLowerCase()))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }
+
+  const handleTaskSearch = (value) => {
+    setTaskSearch(value)
+    setTaskId('')
+    setShowSuggestions(true)
+  }
+
+  const handleTaskSelect = (task) => {
+    setTaskId(task.id)
+    setTaskSearch(task.name)
+    setShowSuggestions(false)
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -47,17 +70,35 @@ function ActivityForm({ activity, tasks, date, onSave, onClose }) {
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="task">Task</label>
-            <select
-              id="task"
-              value={taskId}
-              onChange={(e) => setTaskId(e.target.value)}
-              required
-            >
-              <option value="">Select a task</option>
-              {tasks.map(task => (
-                <option key={task.id} value={task.id}>{task.name}</option>
-              ))}
-            </select>
+            <div className="autocomplete-container">
+              <input
+                id="task"
+                type="text"
+                value={taskSearch}
+                onChange={(e) => handleTaskSearch(e.target.value)}
+                onFocus={() => setShowSuggestions(true)}
+                placeholder="Search tasks..."
+                required={!taskId}
+              />
+              {showSuggestions && taskSearch && (
+                <div className="autocomplete-suggestions">
+                  {getFilteredTasks().length > 0 ? (
+                    getFilteredTasks().map(task => (
+                      <div
+                        key={task.id}
+                        className="autocomplete-option"
+                        onClick={() => handleTaskSelect(task)}
+                      >
+                        {task.name}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="autocomplete-option disabled">No tasks found</div>
+                  )}
+                </div>
+              )}
+            </div>
+            {taskId && <div className="task-selected">✓ Task selected</div>}
           </div>
 
           <div className="form-group">
