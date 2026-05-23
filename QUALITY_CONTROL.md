@@ -27,27 +27,27 @@ This document summarizes the complete quality control and testing infrastructure
 
 ### Python (Backend)
 
-| Tool | Purpose | Config |
-|------|---------|--------|
-| **Black** | Code formatting | `pyproject.toml` |
-| **Flake8** | Linting | `.flake8` |
-| **isort** | Import sorting | `pyproject.toml` |
-| **Bandit** | Security checks | `bandit.yaml` |
-| **MyPy** | Type checking (optional) | `pyproject.toml` |
+| Tool       | Purpose                  | Config           |
+|------------|--------------------------|------------------|
+| **Black**  | Code formatting          | `pyproject.toml` |
+| **Flake8** | Linting                  | `.flake8`        |
+| **isort**  | Import sorting           | `pyproject.toml` |
+| **Bandit** | Security checks          | `bandit.yaml`    |
+| **MyPy**   | Type checking (optional) | `pyproject.toml` |
 
 ### JavaScript/React (Frontend)
 
-| Tool | Purpose | Config |
-|------|---------|--------|
-| **ESLint** | Linting | `.eslintrc.json` |
+| Tool         | Purpose                      | Config           |
+|--------------|------------------------------|------------------|
+| **ESLint**   | Linting                      | `.eslintrc.json` |
 | **Prettier** | Code formatting (via ESLint) | `.eslintrc.json` |
 
 ### Cross-platform
 
-| Tool | Purpose | Config |
-|------|---------|--------|
-| **EditorConfig** | Editor consistency | `.editorconfig` |
-| **Pre-commit** | Automated checks | `.pre-commit-config.yaml` |
+| Tool             | Purpose            | Config                    |
+|------------------|--------------------|---------------------------|
+| **EditorConfig** | Editor consistency | `.editorconfig`           |
+| **Pre-commit**   | Automated checks   | `.pre-commit-config.yaml` |
 
 ## Pre-commit Hooks
 

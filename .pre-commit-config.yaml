@@ -12,7 +12,7 @@ repos:
 
       - id: coverage-update-frontend
         name: Frontend Coverage Update
-        entry: node frontend/update-coverage.js
+        entry: bash -c 'cd frontend && npm install --silent && node update-coverage.js'
         language: system
         pass_filenames: false
         stages: [pre-commit]
@@ -28,7 +28,7 @@ repos:
 
       - id: coverage-frontend-check
         name: Frontend Coverage Check
-        entry: node frontend/check-coverage.js
+        entry: bash -c 'cd frontend && npm install --silent && node check-coverage.js'
         language: system
         pass_filenames: false
         stages: [pre-commit]
