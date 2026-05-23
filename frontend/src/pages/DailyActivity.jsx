@@ -87,7 +87,9 @@ function DailyActivity() {
 
   const getTasksForDay = () => {
     const taskIds = new Set(activities_list.map(a => a.task_id))
-    return tasks_list.filter(task => taskIds.has(task.id))
+    return tasks_list
+      .filter(task => taskIds.has(task.id))
+      .sort((a, b) => a.name.localeCompare(b.name))
   }
 
   const filteredActivities = selectedTaskFilter
