@@ -1,6 +1,61 @@
 # Time Tracker Application
 
-A web-based time tracking application built with FastAPI (backend), React (frontend), and PostgreSQL (database). Track daily activities, manage tasks, and view detailed time spent reports.
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Node.js 18+](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-orange.svg)](https://fastapi.tiangolo.com/)
+[![React 18](https://img.shields.io/badge/React-18+-61DAFB.svg)](https://react.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-336791.svg)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](https://www.docker.com/)
+[![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+A web-based time tracking application built with FastAPI (backend), React (frontend), and PostgreSQL (database). Track daily activities, manage tasks, and view detailed time spent reports with comprehensive filtering, sorting, and reporting capabilities.
+
+## Quick Start
+
+```bash
+# 1. Start the database
+docker-compose up -d
+
+# 2. Start backend (in terminal 1)
+cd backend && pip install -r requirements.txt && python main.py
+
+# 3. Start frontend (in terminal 2)
+cd frontend && npm install && npm run dev
+
+# 4. Open http://localhost:3000 in your browser
+```
+
+For detailed setup instructions, see [Setup Instructions](#setup-instructions) below.
+
+## Table of Contents
+
+- [Quick Start](#quick-start)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Setup Instructions](#setup-instructions)
+- [File Structure](#file-structure)
+- [API Endpoints](#api-endpoints)
+- [Database](#database)
+- [User Interface Features](#user-interface-features)
+- [Testing](#testing)
+- [Development](#development)
+- [Troubleshooting](#troubleshooting)
+- [Production Deployment](#production-deployment)
+
+## Features at a Glance
+
+| Feature | Details |
+|---------|---------|
+| 📅 Daily Activity Tracking | Track time with date navigation, smart task filtering, automatic duration calculation |
+| 📋 Task Management | Create and manage tasks with type, sub-type, source, and links |
+| 📊 Multi-View Reports | Summary by Task/Type/Sub-type + Daily breakdown with cascading filters |
+| ⚙️ Settings | Configure reference date and manage date ranges |
+| 🔍 Smart Filtering | Cascading filters showing only tasks with actual data |
+| 🔄 Sorting | Sort all tables by any column (ascending/descending) |
+| 💾 Data Persistence | One-time Excel import, automatic Docker volume backups |
+| ⚡ Performance | Query caching for historical data, optimized for large datasets |
+| ✅ Fully Tested | 40+ backend tests, 30+ frontend tests covering all scenarios |
 
 ## Features
 
@@ -251,12 +306,44 @@ Format Python code with Black:
 black backend/
 ```
 
+## Testing
+
+For comprehensive testing documentation, see [TESTING.md](TESTING.md).
+
 ### Running Tests
 
-Once tests are added, run them with:
+**Backend Tests** (Using pytest):
+
 ```bash
-pytest backend/
+cd backend
+pip install pytest
+pytest
 ```
+
+Test coverage includes:
+- ✅ Activity CRUD operations (create, read, update, delete)
+- ✅ Activity filtering by date and task
+- ✅ Task management operations
+- ✅ Time spent report calculations
+- ✅ Date range filtering
+- ✅ Settings management
+- ✅ Error handling and validation
+
+**Frontend Tests** (Using Vitest):
+
+```bash
+cd frontend
+npm install --save-dev vitest @vitest/ui jsdom @testing-library/react
+npm run test
+```
+
+Test coverage includes:
+- ✅ API client functionality
+- ✅ Time calculation utilities
+- ✅ Date formatting and navigation
+- ✅ Filtering logic (cascading filters, task filtering)
+- ✅ Sorting functionality
+- ✅ Data aggregation by type and sub-type
 
 ## Troubleshooting
 
