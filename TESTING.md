@@ -103,7 +103,7 @@ def sample_data(db):
 def test_operation(sample_data):
     # Act
     response = client.get("/api/endpoint")
-    
+
     # Assert
     assert response.status_code == 200
     assert response.json()["field"] == "expected_value"
@@ -221,10 +221,10 @@ cd frontend && npm test
 def test_new_feature():
     # Arrange
     data = {...}
-    
+
     # Act
     response = client.post("/api/endpoint", json=data)
-    
+
     # Assert
     assert response.status_code == 200
 ```

@@ -1,8 +1,10 @@
-import openpyxl
 from datetime import datetime
 from pathlib import Path
-from database import get_engine, get_session, Base
-from models import Task, Activity, Settings
+
+import openpyxl
+
+from database import Base, get_engine, get_session
+from models import Activity, Settings, Task
 
 
 def load_excel_data():

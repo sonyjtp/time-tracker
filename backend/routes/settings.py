@@ -1,14 +1,18 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from datetime import date, datetime
+
 from database import get_db
 from models import Settings
-from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/settings", tags=["settings"])
 
+
 class SettingUpdate(BaseModel):
     value: str
+
 
 class SettingResponse(BaseModel):
     key: str
@@ -16,6 +20,7 @@ class SettingResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 @router.get("/{key}", response_model=SettingResponse)
 def get_setting(key: str, db: Session = Depends(get_db)):
@@ -28,6 +33,7 @@ def get_setting(key: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Setting not found")
     return setting
 
+
 @router.put("/{key}")
 def update_setting(key: str, setting: SettingUpdate, db: Session = Depends(get_db)):
     db_setting = db.query(Settings).filter(Settings.key == key).first()
@@ -39,6 +45,7 @@ def update_setting(key: str, setting: SettingUpdate, db: Session = Depends(get_d
     db.commit()
     db.refresh(db_setting)
     return SettingResponse(key=db_setting.key, value=db_setting.value)
+
 
 @router.get("/")
 def get_all_settings(db: Session = Depends(get_db)):

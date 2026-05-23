@@ -1,12 +1,14 @@
-import pytest
 from datetime import date, time
+
+import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from fastapi.testclient import TestClient
-from models import Base, Task, Activity
+
 from database import get_db
 from main import app
+from models import Activity, Base, Task
 
 
 @pytest.fixture(scope="function")
@@ -52,8 +54,6 @@ def client(db):
 @pytest.fixture
 def sample_task(db):
     """Create a sample task for testing"""
-    from models import Task
-
     task = Task(
         name="Test Task",
         type="Development",
@@ -69,8 +69,6 @@ def sample_task(db):
 @pytest.fixture
 def sample_activity(db, sample_task):
     """Create a sample activity for testing"""
-    from datetime import date, time
-    from models import Activity
 
     activity = Activity(
         task_id=sample_task.id,

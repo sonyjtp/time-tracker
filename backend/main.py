@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from database import Base, get_engine
-from models import Task, Activity, Settings
-from routes import activities, tasks, reports, settings
+from routes import activities, reports, settings, tasks
 
 app = FastAPI(title="Time Tracker API")
 
@@ -21,10 +21,13 @@ app.include_router(tasks.router)
 app.include_router(reports.router)
 app.include_router(settings.router)
 
+
 @app.get("/api/health")
 def health_check():
     return {"status": "ok"}
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

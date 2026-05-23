@@ -214,10 +214,10 @@ refactor: simplify filtering logic
 def test_feature_behavior():
     # Arrange: Set up test data
     data = {...}
-    
+
     # Act: Execute the feature
     result = function(data)
-    
+
     # Assert: Verify results
     assert result == expected
 ```

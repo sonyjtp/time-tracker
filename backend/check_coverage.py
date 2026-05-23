@@ -6,7 +6,6 @@ This script runs tests and verifies coverage is at least 85%.
 
 import subprocess
 import sys
-from pathlib import Path
 
 
 def run_coverage_check():

@@ -4,9 +4,9 @@ Generate coverage reports and update coverage information.
 This script is run as part of pre-commit to ensure coverage is current.
 """
 
-import subprocess
-import re
 import json
+import re
+import subprocess
 from pathlib import Path
 
 
@@ -60,8 +60,12 @@ def update_readme_badge(coverage_percent):
         content = f.read()
 
     # Update coverage badge
-    old_badge = r'!\[Coverage\]\(https://img\.shields\.io/badge/Coverage-\d+(\.\d+)?%25-success\.svg\)'
-    new_badge = f"![Coverage](https://img.shields.io/badge/Coverage-{coverage_percent}%25-success.svg)"
+    old_badge = (
+        r"!\[Coverage\]\(https://img\.shields\.io/badge/Coverage-\d+(\.\d+)?%25-success\.svg\)"
+    )
+    new_badge = (
+        f"![Coverage](https://img.shields.io/badge/Coverage-{coverage_percent}%25-success.svg)"
+    )
 
     updated = re.sub(old_badge, new_badge, content)
 

@@ -1,7 +1,10 @@
-from sqlalchemy import Column, Integer, String, Time, Date, Text, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
 from datetime import datetime
+
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, Text, Time
+from sqlalchemy.orm import relationship
+
 from database import Base
+
 
 class Task(Base):
     __tablename__ = "tasks"
@@ -16,6 +19,7 @@ class Task(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     activities = relationship("Activity", back_populates="task", cascade="all, delete-orphan")
+
 
 class Activity(Base):
     __tablename__ = "activities"
@@ -32,6 +36,7 @@ class Activity(Base):
 
     task = relationship("Task", back_populates="activities")
 
+
 class Settings(Base):
     __tablename__ = "settings"
 
@@ -40,6 +45,7 @@ class Settings(Base):
     value = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 
 class TimeSpentCache(Base):
     __tablename__ = "time_spent_cache"
