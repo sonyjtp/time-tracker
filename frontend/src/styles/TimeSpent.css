@@ -104,16 +104,71 @@
   font-weight: 600;
 }
 
+.daily-view-scroll-container {
+  max-height: 800px;
+  overflow-y: auto;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  width: fit-content;
+}
+
+.daily-view-scroll-container table {
+  width: auto;
+  border-collapse: collapse;
+}
+
+.daily-view-scroll-container thead {
+  position: sticky;
+  top: 0;
+  background-color: #ecf0f1;
+  z-index: 10;
+}
+
+.daily-view-scroll-container thead th {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: bold;
+  border-bottom: 2px solid #bdc3c7;
+  background-color: #ecf0f1;
+  white-space: nowrap;
+}
+
+.daily-view-scroll-container thead th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.daily-view-scroll-container thead th.sortable:hover {
+  background-color: #d5d8dc;
+}
+
+.daily-view-scroll-container thead th.sortable.sorted {
+  background-color: #bdc3c7;
+  font-weight: bold;
+}
+
+.daily-view-scroll-container tbody td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #ecf0f1;
+  white-space: nowrap;
+}
+
+.daily-view-scroll-container tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
 .daily-average-scroll-container {
   max-height: 800px;
   overflow-y: auto;
   border: 1px solid #bdc3c7;
   border-radius: 4px;
   margin-bottom: 1rem;
+  width: fit-content;
 }
 
 .daily-average-scroll-container table {
-  width: 100%;
+  width: auto;
   border-collapse: collapse;
 }
 
@@ -130,11 +185,27 @@
   font-weight: bold;
   border-bottom: 2px solid #bdc3c7;
   background-color: #ecf0f1;
+  white-space: nowrap;
+}
+
+.daily-average-scroll-container thead th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.daily-average-scroll-container thead th.sortable:hover {
+  background-color: #d5d8dc;
+}
+
+.daily-average-scroll-container thead th.sortable.sorted {
+  background-color: #bdc3c7;
+  font-weight: bold;
 }
 
 .daily-average-scroll-container tbody td {
   padding: 0.75rem;
   border-bottom: 1px solid #ecf0f1;
+  white-space: nowrap;
 }
 
 .daily-average-scroll-container tbody tr:hover {

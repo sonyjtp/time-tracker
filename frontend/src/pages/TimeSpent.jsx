@@ -145,55 +145,75 @@ function TimeSpent() {
       .sort((a, b) => a.name.localeCompare(b.name))
   }
 
-   const getDailyAverage = () => {
-     // Parse dates as local dates (not UTC)
-     const [startYear, startMonth, startDay] = startDate.split('-').map(Number)
-     const [endYear, endMonth, endDay] = endDate.split('-').map(Number)
-     const startDateObj = new Date(startYear, startMonth - 1, startDay)
-     const endDateObj = new Date(endYear, endMonth - 1, endDay)
+    const getDailyAverage = () => {
+      // Parse dates as local dates (not UTC)
+      const [startYear, startMonth, startDay] = startDate.split('-').map(Number)
+      const [endYear, endMonth, endDay] = endDate.split('-').map(Number)
+      const startDateObj = new Date(startYear, startMonth - 1, startDay)
+      const endDateObj = new Date(endYear, endMonth - 1, endDay)
 
-     // Filter daily data to only include dates within the selected range
-     const filteredDailyData = dailyData.filter(item => {
-       // Parse the item date as a local date
-       const [itemYear, itemMonth, itemDay] = item.date.split('-').map(Number)
-       const itemDate = new Date(itemYear, itemMonth - 1, itemDay)
-       const inRange = itemDate >= startDateObj && itemDate <= endDateObj
-       return inRange
-     })
+      // Filter daily data to only include dates within the selected range
+      const filteredDailyData = dailyData.filter(item => {
+        // Parse the item date as a local date
+        const [itemYear, itemMonth, itemDay] = item.date.split('-').map(Number)
+        const itemDate = new Date(itemYear, itemMonth - 1, itemDay)
+        const inRange = itemDate >= startDateObj && itemDate <= endDateObj
+        return inRange
+      })
 
-     // Group daily data by date
-     const dailyTotals = {}
-     filteredDailyData.forEach(item => {
-       if (!dailyTotals[item.date]) {
-         dailyTotals[item.date] = 0
-       }
-       dailyTotals[item.date] += item.hours
-     })
+      // Group daily data by date
+      const dailyTotals = {}
+      filteredDailyData.forEach(item => {
+        if (!dailyTotals[item.date]) {
+          dailyTotals[item.date] = 0
+        }
+        dailyTotals[item.date] += item.hours
+      })
 
-     // Sort dates chronologically
-     const sortedDates = Object.keys(dailyTotals).sort()
+      // Sort dates chronologically
+      const sortedDates = Object.keys(dailyTotals).sort()
 
-     // Calculate cumulative average for each day
-     const result = []
-     let cumulativeHours = 0
+      // Calculate cumulative average for each day
+      let result = []
+      let cumulativeHours = 0
 
-     sortedDates.forEach((date, index) => {
-       cumulativeHours += dailyTotals[date]
-       // Parse as local date
-       const [dateYear, dateMonth, dateDay] = date.split('-').map(Number)
-       const currentDate = new Date(dateYear, dateMonth - 1, dateDay)
-       const daysDiff = Math.floor((currentDate - startDateObj) / (1000 * 60 * 60 * 24)) + 1
-       const cumulativeAverage = cumulativeHours / daysDiff
+      sortedDates.forEach((date, index) => {
+        cumulativeHours += dailyTotals[date]
+        // Parse as local date
+        const [dateYear, dateMonth, dateDay] = date.split('-').map(Number)
+        const currentDate = new Date(dateYear, dateMonth - 1, dateDay)
+        const daysDiff = Math.floor((currentDate - startDateObj) / (1000 * 60 * 60 * 24)) + 1
+        const cumulativeAverage = cumulativeHours / daysDiff
 
-       result.push({
-         date,
-         total_hours: dailyTotals[date],
-         average_hours: cumulativeAverage
-       })
-     })
+        result.push({
+          date,
+          total_hours: dailyTotals[date],
+          average_hours: cumulativeAverage
+        })
+      })
 
-     return result
-   }
+      // Apply sorting based on sortColumn and sortAscending
+      result.sort((a, b) => {
+        let aVal, bVal
+        if (sortColumn === 'date') {
+          aVal = new Date(a.date + 'T00:00:00')
+          bVal = new Date(b.date + 'T00:00:00')
+        } else if (sortColumn === 'total_hours') {
+          aVal = a.total_hours
+          bVal = b.total_hours
+        } else if (sortColumn === 'average_hours') {
+          aVal = a.average_hours
+          bVal = b.average_hours
+        } else {
+          // Default: sort by date chronologically
+          aVal = new Date(a.date + 'T00:00:00')
+          bVal = new Date(b.date + 'T00:00:00')
+        }
+        return sortAscending ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1)
+      })
+
+      return result
+    }
 
    const getDaysInRange = () => {
      const [startYear, startMonth, startDay] = startDate.split('-').map(Number)
@@ -204,26 +224,42 @@ function TimeSpent() {
      return Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) + 1
    }
 
-   const getDailyTotals = () => {
-     // Group all daily data by date and sum the hours
-     const dailyTotals = {}
-     dailyData.forEach(item => {
-       if (!dailyTotals[item.date]) {
-         dailyTotals[item.date] = 0
-       }
-       dailyTotals[item.date] += item.hours
-     })
+    const getDailyTotals = () => {
+      // Group all daily data by date and sum the hours
+      const dailyTotals = {}
+      dailyData.forEach(item => {
+        if (!dailyTotals[item.date]) {
+          dailyTotals[item.date] = 0
+        }
+        dailyTotals[item.date] += item.hours
+      })
 
-     // Convert to array and sort chronologically
-     const result = Object.entries(dailyTotals)
-       .map(([date, totalHours]) => ({
-         date,
-         total_hours: totalHours
-       }))
-       .sort((a, b) => new Date(a.date + 'T00:00:00') - new Date(b.date + 'T00:00:00'))
+      // Convert to array and sort chronologically
+      let result = Object.entries(dailyTotals)
+        .map(([date, totalHours]) => ({
+          date,
+          total_hours: totalHours
+        }))
 
-     return result
-   }
+      // Apply sorting based on sortColumn and sortAscending
+      result.sort((a, b) => {
+        let aVal, bVal
+        if (sortColumn === 'date') {
+          aVal = new Date(a.date + 'T00:00:00')
+          bVal = new Date(b.date + 'T00:00:00')
+        } else if (sortColumn === 'total_hours') {
+          aVal = a.total_hours
+          bVal = b.total_hours
+        } else {
+          // Default: sort by date chronologically
+          aVal = new Date(a.date + 'T00:00:00')
+          bVal = new Date(b.date + 'T00:00:00')
+        }
+        return sortAscending ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1)
+      })
+
+      return result
+    }
 
   const getSortedSummaryData = () => {
     const filtered = getFilteredSummaryData()
@@ -561,79 +597,104 @@ function TimeSpent() {
           </div>
         )}
 
-       {activeView === 'daily' && (
-         <div className="daily-view">
-           {summaryData.length === 0 ? (
-             <div className="empty-state">No time spent data</div>
-           ) : (
-             <>
-               <table className="daily-table-summary">
-                 <thead>
-                   <tr>
-                     <th>Date</th>
-                     <th>Hours</th>
-                   </tr>
-                 </thead>
-                  <tbody>
-                    {getDailyTotals().map((item, idx) => {
-                      // Format date directly from YYYY-MM-DD string without timezone conversion
-                      const [year, month, day] = item.date.split('-')
-                      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-                      const dateStr = `${monthNames[parseInt(month) - 1]} ${parseInt(day)}, ${year}`
-                      return (
-                        <tr key={idx}>
-                          <td>{dateStr}</td>
-                          <td>{formatHoursToHHMM(item.total_hours)}</td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-               </table>
-             </>
-           )}
-         </div>
-       )}
+        {activeView === 'daily' && (
+          <div className="daily-view">
+            {summaryData.length === 0 ? (
+              <div className="empty-state">No time spent data</div>
+            ) : (
+              <div className="daily-view-scroll-container">
+                <table className="daily-table-summary">
+                  <thead>
+                    <tr>
+                      <th
+                        className={`sortable ${sortColumn === 'date' ? 'sorted' : ''}`}
+                        onClick={() => handleSort('date')}
+                      >
+                        Date {sortColumn === 'date' && (sortAscending ? '↑' : '↓')}
+                      </th>
+                      <th
+                        className={`sortable ${sortColumn === 'total_hours' ? 'sorted' : ''}`}
+                        onClick={() => handleSort('total_hours')}
+                      >
+                        Hours {sortColumn === 'total_hours' && (sortAscending ? '↑' : '↓')}
+                      </th>
+                    </tr>
+                  </thead>
+                   <tbody>
+                     {getDailyTotals().map((item, idx) => {
+                       // Format date directly from YYYY-MM-DD string without timezone conversion
+                       const [year, month, day] = item.date.split('-')
+                       const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                       const dateStr = `${monthNames[parseInt(month) - 1]} ${parseInt(day)}, ${year}`
+                       return (
+                         <tr key={idx}>
+                           <td>{dateStr}</td>
+                           <td>{formatHoursToHHMM(item.total_hours)}</td>
+                         </tr>
+                       )
+                     })}
+                   </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
 
-       {activeView === 'dailyAverage' && (
-         <div className="daily-average-view">
-           {dailyData.length === 0 ? (
-             <div className="empty-state">No time spent data</div>
-           ) : (
-             <>
-               <div className="range-info">
-                 <p>Date range: <strong>{startDate}</strong> to <strong>{endDate}</strong> ({getDaysInRange()} days)</p>
-                 <p>Cumulative Average = Sum of hours from start date to that day ÷ Number of calendar days from start</p>
-               </div>
-               <div className="daily-average-scroll-container">
-                 <table className="daily-average-table">
-                   <thead>
-                     <tr>
-                       <th>Date</th>
-                       <th>Hours Worked</th>
-                       <th>Cumulative Average</th>
-                     </tr>
-                   </thead>
-                    <tbody>
-                      {getDailyAverage().map((item, idx) => {
-                        // Format date directly from YYYY-MM-DD string without timezone conversion
-                        const [year, month, day] = item.date.split('-')
-                        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-                        const dateStr = `${monthNames[parseInt(month) - 1]} ${parseInt(day)}, ${year}`
-                        return (
-                          <tr key={idx}>
-                            <td>{dateStr}</td>
-                            <td>{formatHoursToHHMM(item.total_hours)}</td>
-                            <td>{formatHoursToHHMM(item.average_hours)}</td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                 </table>
-               </div>
-             </>
-           )}
-         </div>
-       )}
+        {activeView === 'dailyAverage' && (
+          <div className="daily-average-view">
+            {dailyData.length === 0 ? (
+              <div className="empty-state">No time spent data</div>
+            ) : (
+              <>
+                <div className="range-info">
+                  <p>Date range: <strong>{startDate}</strong> to <strong>{endDate}</strong> ({getDaysInRange()} days)</p>
+                  <p>Cumulative Average = Sum of hours from start date to that day ÷ Number of calendar days from start</p>
+                </div>
+                <div className="daily-average-scroll-container">
+                  <table className="daily-average-table">
+                    <thead>
+                      <tr>
+                        <th
+                          className={`sortable ${sortColumn === 'date' ? 'sorted' : ''}`}
+                          onClick={() => handleSort('date')}
+                        >
+                          Date {sortColumn === 'date' && (sortAscending ? '↑' : '↓')}
+                        </th>
+                        <th
+                          className={`sortable ${sortColumn === 'total_hours' ? 'sorted' : ''}`}
+                          onClick={() => handleSort('total_hours')}
+                        >
+                          Hours Worked {sortColumn === 'total_hours' && (sortAscending ? '↑' : '↓')}
+                        </th>
+                        <th
+                          className={`sortable ${sortColumn === 'average_hours' ? 'sorted' : ''}`}
+                          onClick={() => handleSort('average_hours')}
+                        >
+                          Cumulative Average {sortColumn === 'average_hours' && (sortAscending ? '↑' : '↓')}
+                        </th>
+                      </tr>
+                    </thead>
+                     <tbody>
+                       {getDailyAverage().map((item, idx) => {
+                         // Format date directly from YYYY-MM-DD string without timezone conversion
+                         const [year, month, day] = item.date.split('-')
+                         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                         const dateStr = `${monthNames[parseInt(month) - 1]} ${parseInt(day)}, ${year}`
+                         return (
+                           <tr key={idx}>
+                             <td>{dateStr}</td>
+                             <td>{formatHoursToHHMM(item.total_hours)}</td>
+                             <td>{formatHoursToHHMM(item.average_hours)}</td>
+                           </tr>
+                         )
+                       })}
+                     </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </div>
+        )}
     </div>
   )
 }
