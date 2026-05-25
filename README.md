@@ -4,10 +4,13 @@
 [![Node.js 18+](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-orange.svg)](https://fastapi.tiangolo.com/)
 [![React 18](https://img.shields.io/badge/React-18+-61DAFB.svg)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-5.0+-646CFF.svg)](https://vitejs.dev/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-336791.svg)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](https://www.docker.com/)
-[![Tests](https://img.shields.io/badge/Tests-70%2B-brightgreen.svg)](TESTING.md)
-[![Coverage](https://img.shields.io/badge/Coverage-85%25-success.svg)](TESTING.md)
+[![Tests](https://img.shields.io/badge/Tests-114-brightgreen.svg)](TESTING.md)
+[![Backend Coverage](https://img.shields.io/badge/Backend%20Coverage-92%25-success.svg)](TESTING.md)
+[![Frontend Coverage](https://img.shields.io/badge/Frontend%20Coverage-64%25-yellowgreen.svg)](TESTING.md)
+[![ESLint](https://img.shields.io/badge/ESLint-Configured-4B3B8A.svg)](#)
 [![Code Quality](https://img.shields.io/badge/Code%20Quality-A-success.svg)](#)
 [![Pre-commit Checks](https://img.shields.io/badge/Pre%E2%80%90commit-Enabled-blue.svg)](#)
 [![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -49,17 +52,17 @@ For detailed setup instructions, see [Setup Instructions](#setup-instructions) b
 
 ## Features at a Glance
 
-| Feature | Details |
-|---------|---------|
+| Feature                    | Details                                                                               |
+|----------------------------|---------------------------------------------------------------------------------------|
 | 📅 Daily Activity Tracking | Track time with date navigation, smart task filtering, automatic duration calculation |
-| 📋 Task Management | Create and manage tasks with type, sub-type, source, and links |
-| 📊 Multi-View Reports | Summary by Task/Type/Sub-type + Daily breakdown with cascading filters |
-| ⚙️ Settings | Configure reference date and manage date ranges |
-| 🔍 Smart Filtering | Cascading filters showing only tasks with actual data |
-| 🔄 Sorting | Sort all tables by any column (ascending/descending) |
-| 💾 Data Persistence | One-time Excel import, automatic Docker volume backups |
-| ⚡ Performance | Query caching for historical data, optimized for large datasets |
-| ✅ Fully Tested | 40+ backend tests, 30+ frontend tests covering all scenarios |
+| 📋 Task Management         | Create and manage tasks with type, sub-type, source, and links                        |
+| 📊 Multi-View Reports      | Summary by Task/Type/Sub-type + Daily breakdown with cascading filters                |
+| ⚙️ Settings                | Configure reference date and manage date ranges                                       |
+| 🔍 Smart Filtering         | Cascading filters showing only tasks with actual data                                 |
+| 🔄 Sorting                 | Sort all tables by any column (ascending/descending)                                  |
+| 💾 Data Persistence        | One-time Excel import, automatic Docker volume backups                                |
+| ⚡ Performance              | Query caching for historical data, optimized for large datasets                       |
+| ✅ Fully Tested             | 65 backend tests, 49 frontend tests (114 total) covering all scenarios                |
 
 ## Features
 
