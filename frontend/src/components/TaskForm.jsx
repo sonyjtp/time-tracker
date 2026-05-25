@@ -7,7 +7,10 @@ function TaskForm({ task, onSave, onClose }) {
   const [subType, setSubType] = useState(task?.sub_type || '')
   const [source, setSource] = useState(task?.source || '')
   const [links, setLinks] = useState(task?.links || '')
-  const [endDate, setEndDate] = useState(task?.end_date || '')
+  // Autofill end_date with last_worked_date if not already set
+  const [endDate, setEndDate] = useState(
+    task?.end_date || (task?.last_worked_date ? task.last_worked_date : '')
+  )
   const [error, setError] = useState(null)
 
   const handleSubmit = (e) => {
@@ -96,7 +99,11 @@ function TaskForm({ task, onSave, onClose }) {
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
             />
-            <small>Set this to mark the task as completed on a specific date</small>
+            <small>
+              {task?.last_worked_date && !task?.end_date && endDate === task.last_worked_date
+                ? 'Auto-filled with last worked date. Edit to change.'
+                : 'Set this to mark the task as completed on a specific date'}
+            </small>
           </div>
 
           <div className="form-actions">

@@ -60,13 +60,22 @@ function TimeSpent() {
     }
   }
 
-  const handleDateChange = () => {
-    if (startDate && endDate) {
-      loadData(startDate, endDate)
-    }
-  }
+   const handleDateChange = () => {
+     if (startDate && endDate) {
+       loadData(startDate, endDate)
+     }
+   }
 
-  const getDailyDataForTask = (taskId) => {
+   const handleSort = (column) => {
+     if (sortColumn === column) {
+       setSortAscending(!sortAscending)
+     } else {
+       setSortColumn(column)
+       setSortAscending(true)
+     }
+   }
+
+   const getDailyDataForTask = (taskId) => {
     return dailyData.filter(d => d.task_id === taskId)
   }
 
@@ -269,41 +278,77 @@ function TimeSpent() {
     return result
   }
 
-  const getSummaryBySubtype = () => {
-    const subtypeMap = {}
-    const tasksWithActivities = getTasksWithActivities()
+   const getSummaryBySubtype = () => {
+     const subtypeMap = {}
+     const tasksWithActivities = getTasksWithActivities()
 
-    getFilteredSummaryData().forEach(item => {
-      if (tasksWithActivities.has(item.task_id)) {
-        const taskInfo = getTaskInfo(item.task_id)
-        const subtypeKey = taskInfo?.sub_type || 'Unknown'
+     getFilteredSummaryData().forEach(item => {
+       if (tasksWithActivities.has(item.task_id)) {
+         const taskInfo = getTaskInfo(item.task_id)
+         const subtypeKey = taskInfo?.sub_type || 'Unknown'
 
-        if (!subtypeMap[subtypeKey]) {
-          subtypeMap[subtypeKey] = 0
-        }
-        subtypeMap[subtypeKey] += item.total_hours
-      }
-    })
+         if (!subtypeMap[subtypeKey]) {
+           subtypeMap[subtypeKey] = 0
+         }
+         subtypeMap[subtypeKey] += item.total_hours
+       }
+     })
 
-    const result = Object.entries(subtypeMap).map(([subtype, hours]) => ({
-      subtype,
-      total_hours: hours
-    }))
+     const result = Object.entries(subtypeMap).map(([subtype, hours]) => ({
+       subtype,
+       total_hours: hours
+     }))
 
-    result.sort((a, b) => {
-      let aVal, bVal
-      if (sortColumn === 'subtype') {
-        aVal = a.subtype.toLowerCase()
-        bVal = b.subtype.toLowerCase()
-      } else if (sortColumn === 'total_hours') {
-        aVal = a.total_hours
-        bVal = b.total_hours
-      }
-      return sortAscending ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1)
-    })
+     result.sort((a, b) => {
+       let aVal, bVal
+       if (sortColumn === 'subtype') {
+         aVal = a.subtype.toLowerCase()
+         bVal = b.subtype.toLowerCase()
+       } else if (sortColumn === 'total_hours') {
+         aVal = a.total_hours
+         bVal = b.total_hours
+       }
+       return sortAscending ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1)
+     })
 
-    return result
-  }
+     return result
+   }
+
+   const getSummaryBySource = () => {
+     const sourceMap = {}
+     const tasksWithActivities = getTasksWithActivities()
+
+     getFilteredSummaryData().forEach(item => {
+       if (tasksWithActivities.has(item.task_id)) {
+         const taskInfo = getTaskInfo(item.task_id)
+         const sourceKey = taskInfo?.source || 'Unknown'
+
+         if (!sourceMap[sourceKey]) {
+           sourceMap[sourceKey] = 0
+         }
+         sourceMap[sourceKey] += item.total_hours
+       }
+     })
+
+     const result = Object.entries(sourceMap).map(([source, hours]) => ({
+       source,
+       total_hours: hours
+     }))
+
+     result.sort((a, b) => {
+       let aVal, bVal
+       if (sortColumn === 'source') {
+         aVal = a.source.toLowerCase()
+         bVal = b.source.toLowerCase()
+       } else if (sortColumn === 'total_hours') {
+         aVal = a.total_hours
+         bVal = b.total_hours
+       }
+       return sortAscending ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1)
+     })
+
+     return result
+   }
 
   if (loading) return <div className="loading">Loading...</div>
 
@@ -337,38 +382,44 @@ function TimeSpent() {
         <button onClick={handleDateChange} className="btn-apply">Apply</button>
       </div>
 
-       <div className="view-tabs">
-         <button
-           className={`tab ${activeView === 'summary' ? 'active' : ''}`}
-           onClick={() => setActiveView('summary')}
-         >
-           Summary by Task
-         </button>
-         <button
-           className={`tab ${activeView === 'type' ? 'active' : ''}`}
-           onClick={() => setActiveView('type')}
-         >
-           Summary by Type
-         </button>
-         <button
-           className={`tab ${activeView === 'subtype' ? 'active' : ''}`}
-           onClick={() => setActiveView('subtype')}
-         >
-           Summary by Sub-Type
-         </button>
-         <button
-           className={`tab ${activeView === 'daily' ? 'active' : ''}`}
-           onClick={() => setActiveView('daily')}
-         >
-           Daily Breakdown
-         </button>
-         <button
-           className={`tab ${activeView === 'dailyAverage' ? 'active' : ''}`}
-           onClick={() => setActiveView('dailyAverage')}
-         >
-           Daily Average
-         </button>
-       </div>
+        <div className="view-tabs">
+          <button
+            className={`tab ${activeView === 'summary' ? 'active' : ''}`}
+            onClick={() => setActiveView('summary')}
+          >
+            Summary by Task
+          </button>
+          <button
+            className={`tab ${activeView === 'type' ? 'active' : ''}`}
+            onClick={() => setActiveView('type')}
+          >
+            Summary by Type
+          </button>
+          <button
+            className={`tab ${activeView === 'subtype' ? 'active' : ''}`}
+            onClick={() => setActiveView('subtype')}
+          >
+            Summary by Sub-Type
+          </button>
+          <button
+            className={`tab ${activeView === 'source' ? 'active' : ''}`}
+            onClick={() => setActiveView('source')}
+          >
+            Summary by Source
+          </button>
+          <button
+            className={`tab ${activeView === 'daily' ? 'active' : ''}`}
+            onClick={() => setActiveView('daily')}
+          >
+            Daily Breakdown
+          </button>
+          <button
+            className={`tab ${activeView === 'dailyAverage' ? 'active' : ''}`}
+            onClick={() => setActiveView('dailyAverage')}
+          >
+            Daily Average
+          </button>
+        </div>
 
        {activeView === 'summary' && (
          <div className="summary-view">
@@ -440,40 +491,75 @@ function TimeSpent() {
          </div>
        )}
 
-       {activeView === 'subtype' && (
-         <div className="summary-view">
-           {summaryData.length === 0 ? (
-             <div className="empty-state">No time spent data</div>
-           ) : (
-             <table className="summary-table">
-               <thead>
-                 <tr>
-                   <th
-                     className={`sortable ${sortColumn === 'subtype' ? 'sorted' : ''}`}
-                     onClick={() => handleSort('subtype')}
-                   >
-                     Sub-Type {sortColumn === 'subtype' && (sortAscending ? '↑' : '↓')}
-                   </th>
-                   <th
-                     className={`sortable ${sortColumn === 'total_hours' ? 'sorted' : ''}`}
-                     onClick={() => handleSort('total_hours')}
-                   >
-                     Total Time (hours) {sortColumn === 'total_hours' && (sortAscending ? '↑' : '↓')}
-                   </th>
-                 </tr>
-               </thead>
-               <tbody>
-                 {getSummaryBySubtype().map(item => (
-                   <tr key={item.subtype}>
-                     <td>{item.subtype}</td>
-                     <td>{formatHoursToHHMM(item.total_hours)}</td>
-                   </tr>
-                 ))}
-               </tbody>
-             </table>
-           )}
-         </div>
-       )}
+        {activeView === 'subtype' && (
+          <div className="summary-view">
+            {summaryData.length === 0 ? (
+              <div className="empty-state">No time spent data</div>
+            ) : (
+              <table className="summary-table">
+                <thead>
+                  <tr>
+                    <th
+                      className={`sortable ${sortColumn === 'subtype' ? 'sorted' : ''}`}
+                      onClick={() => handleSort('subtype')}
+                    >
+                      Sub-Type {sortColumn === 'subtype' && (sortAscending ? '↑' : '↓')}
+                    </th>
+                    <th
+                      className={`sortable ${sortColumn === 'total_hours' ? 'sorted' : ''}`}
+                      onClick={() => handleSort('total_hours')}
+                    >
+                      Total Time (hours) {sortColumn === 'total_hours' && (sortAscending ? '↑' : '↓')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {getSummaryBySubtype().map(item => (
+                    <tr key={item.subtype}>
+                      <td>{item.subtype}</td>
+                      <td>{formatHoursToHHMM(item.total_hours)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
+        {activeView === 'source' && (
+          <div className="summary-view">
+            {summaryData.length === 0 ? (
+              <div className="empty-state">No time spent data</div>
+            ) : (
+              <table className="summary-table">
+                <thead>
+                  <tr>
+                    <th
+                      className={`sortable ${sortColumn === 'source' ? 'sorted' : ''}`}
+                      onClick={() => handleSort('source')}
+                    >
+                      Source {sortColumn === 'source' && (sortAscending ? '↑' : '↓')}
+                    </th>
+                    <th
+                      className={`sortable ${sortColumn === 'total_hours' ? 'sorted' : ''}`}
+                      onClick={() => handleSort('total_hours')}
+                    >
+                      Total Time (hours) {sortColumn === 'total_hours' && (sortAscending ? '↑' : '↓')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {getSummaryBySource().map(item => (
+                    <tr key={item.source}>
+                      <td>{item.source}</td>
+                      <td>{formatHoursToHHMM(item.total_hours)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
 
        {activeView === 'daily' && (
          <div className="daily-view">

@@ -15,13 +15,16 @@ function Tasks() {
   const [endDate, setEndDate] = useState('')
   const [sortColumn, setSortColumn] = useState('name')
   const [sortAscending, setSortAscending] = useState(true)
-  const [inlineEditingId, setInlineEditingId] = useState(null)
-  const [inlineEditField, setInlineEditField] = useState(null)
-  const [inlineEditValue, setInlineEditValue] = useState('')
+   const [inlineEditingId, setInlineEditingId] = useState(null)
+   const [inlineEditField, setInlineEditField] = useState(null)
+   const [inlineEditValue, setInlineEditValue] = useState('')
+   const [filterType, setFilterType] = useState('')
+   const [filterSubType, setFilterSubType] = useState('')
+   const [filterSource, setFilterSource] = useState('')
 
-  useEffect(() => {
-    loadReferenceDate()
-  }, [])
+   useEffect(() => {
+     loadReferenceDate()
+   }, [])
 
   const loadReferenceDate = async () => {
     try {
@@ -75,40 +78,57 @@ function Tasks() {
     }
   }
 
-  const getSortedTasks = () => {
-    const sorted = [...tasks_list]
-    sorted.sort((a, b) => {
-      let aVal, bVal
+   const getSortedTasks = () => {
+     const sorted = [...tasks_list]
+     sorted.sort((a, b) => {
+       let aVal, bVal
 
-      if (sortColumn === 'name') {
-        aVal = a.name.toLowerCase()
-        bVal = b.name.toLowerCase()
-      } else if (sortColumn === 'type') {
-        aVal = (a.type || '').toLowerCase()
-        bVal = (b.type || '').toLowerCase()
-      } else if (sortColumn === 'subtype') {
-        aVal = (a.sub_type || '').toLowerCase()
-        bVal = (b.sub_type || '').toLowerCase()
-      } else if (sortColumn === 'source') {
-        aVal = (a.source || '').toLowerCase()
-        bVal = (b.source || '').toLowerCase()
-       } else if (sortColumn === 'start_date') {
-         aVal = a.start_date || ''
-         bVal = b.start_date || ''
-       } else if (sortColumn === 'last_worked_date') {
-         aVal = a.last_worked_date || ''
-         bVal = b.last_worked_date || ''
-       } else if (sortColumn === 'end_date') {
-         aVal = a.end_date || ''
-         bVal = b.end_date || ''
+       if (sortColumn === 'name') {
+         aVal = a.name.toLowerCase()
+         bVal = b.name.toLowerCase()
+       } else if (sortColumn === 'type') {
+         aVal = (a.type || '').toLowerCase()
+         bVal = (b.type || '').toLowerCase()
+       } else if (sortColumn === 'subtype') {
+         aVal = (a.sub_type || '').toLowerCase()
+         bVal = (b.sub_type || '').toLowerCase()
+       } else if (sortColumn === 'source') {
+         aVal = (a.source || '').toLowerCase()
+         bVal = (b.source || '').toLowerCase()
+        } else if (sortColumn === 'start_date') {
+          aVal = a.start_date || ''
+          bVal = b.start_date || ''
+        } else if (sortColumn === 'last_worked_date') {
+          aVal = a.last_worked_date || ''
+          bVal = b.last_worked_date || ''
+        } else if (sortColumn === 'end_date') {
+          aVal = a.end_date || ''
+          bVal = b.end_date || ''
+        }
+
+       if (aVal < bVal) return sortAscending ? -1 : 1
+       if (aVal > bVal) return sortAscending ? 1 : -1
+       return 0
+     })
+
+     // Apply filters
+     return sorted.filter(task => {
+       if (filterType && task.type !== filterType) return false
+       if (filterSubType && task.sub_type !== filterSubType) return false
+       if (filterSource && task.source !== filterSource) return false
+       return true
+     })
+   }
+
+   const getUniqueValues = (field) => {
+     const values = new Set()
+     tasks_list.forEach(task => {
+       if (task[field]) {
+         values.add(task[field])
        }
-
-      if (aVal < bVal) return sortAscending ? -1 : 1
-      if (aVal > bVal) return sortAscending ? 1 : -1
-      return 0
-    })
-    return sorted
-  }
+     })
+     return Array.from(values).sort()
+   }
 
   const handleAddTask = () => {
     setEditingTask(null)
@@ -141,11 +161,16 @@ function Tasks() {
     }
   }
 
-  const handleStartInlineEdit = (task, field) => {
-    setInlineEditingId(task.id)
-    setInlineEditField(field)
-    setInlineEditValue(task[field] || '')
-  }
+   const handleStartInlineEdit = (task, field) => {
+     setInlineEditingId(task.id)
+     setInlineEditField(field)
+     // Auto-fill end_date with last_worked_date if not already set
+     if (field === 'end_date' && !task.end_date && task.last_worked_date) {
+       setInlineEditValue(task.last_worked_date)
+     } else {
+       setInlineEditValue(task[field] || '')
+     }
+   }
 
   const handleSaveInlineEdit = async (taskId) => {
     if (!inlineEditField) return
@@ -257,27 +282,71 @@ function Tasks() {
 
       {error && <div className="error">{error}</div>}
 
-      <div className="date-range-selector">
-        <div className="date-field">
-          <label htmlFor="start-date">Start Date</label>
-          <input
-            id="start-date"
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-        </div>
-        <div className="date-field">
-          <label htmlFor="end-date">End Date</label>
-          <input
-            id="end-date"
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </div>
-        <button onClick={handleDateChange} className="btn-apply">Apply</button>
-      </div>
+       <div className="date-range-selector">
+         <div className="date-field">
+           <label htmlFor="start-date">Start Date</label>
+           <input
+             id="start-date"
+             type="date"
+             value={startDate}
+             onChange={(e) => setStartDate(e.target.value)}
+           />
+         </div>
+         <div className="date-field">
+           <label htmlFor="end-date">End Date</label>
+           <input
+             id="end-date"
+             type="date"
+             value={endDate}
+             onChange={(e) => setEndDate(e.target.value)}
+           />
+         </div>
+         <button onClick={handleDateChange} className="btn-apply">Apply</button>
+       </div>
+
+       <div className="filter-section">
+         <div className="filter-group">
+           <label htmlFor="filter-type">Type</label>
+           <select
+             id="filter-type"
+             value={filterType}
+             onChange={(e) => setFilterType(e.target.value)}
+           >
+             <option value="">All Types</option>
+             {getUniqueValues('type').map(value => (
+               <option key={value} value={value}>{value}</option>
+             ))}
+           </select>
+         </div>
+
+         <div className="filter-group">
+           <label htmlFor="filter-subtype">Sub-Type</label>
+           <select
+             id="filter-subtype"
+             value={filterSubType}
+             onChange={(e) => setFilterSubType(e.target.value)}
+           >
+             <option value="">All Sub-Types</option>
+             {getUniqueValues('sub_type').map(value => (
+               <option key={value} value={value}>{value}</option>
+             ))}
+           </select>
+         </div>
+
+         <div className="filter-group">
+           <label htmlFor="filter-source">Source</label>
+           <select
+             id="filter-source"
+             value={filterSource}
+             onChange={(e) => setFilterSource(e.target.value)}
+           >
+             <option value="">All Sources</option>
+             {getUniqueValues('source').map(value => (
+               <option key={value} value={value}>{value}</option>
+             ))}
+           </select>
+         </div>
+       </div>
 
       {tasks_list.length === 0 ? (
         <div className="empty-state">No tasks yet</div>
@@ -312,9 +381,9 @@ function Tasks() {
                 <th>Delete</th>
             </tr>
           </thead>
-          <tbody>
-            {getSortedTasks().map(task => (
-              <tr key={task.id}>
+           <tbody>
+             {getSortedTasks().map(task => (
+               <tr key={task.id} className={task.end_date ? 'task-ended' : ''}>
                 <td>{renderEditableCell(task, 'name', task.name)}</td>
                 <td>{renderEditableCell(task, 'type', task.type)}</td>
                 <td>{renderEditableCell(task, 'sub_type', task.sub_type)}</td>
