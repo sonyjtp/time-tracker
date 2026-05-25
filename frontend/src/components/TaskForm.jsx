@@ -7,6 +7,7 @@ function TaskForm({ task, onSave, onClose }) {
   const [subType, setSubType] = useState(task?.sub_type || '')
   const [source, setSource] = useState(task?.source || '')
   const [links, setLinks] = useState(task?.links || '')
+  const [endDate, setEndDate] = useState(task?.end_date || '')
   const [error, setError] = useState(null)
 
   const handleSubmit = (e) => {
@@ -24,6 +25,7 @@ function TaskForm({ task, onSave, onClose }) {
       sub_type: subType || '',
       source: source || '',
       links: links || null,
+      end_date: endDate || null,
     }
 
     onSave(taskData)
@@ -84,6 +86,17 @@ function TaskForm({ task, onSave, onClose }) {
               value={links}
               onChange={(e) => setLinks(e.target.value)}
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="endDate">End Date (Mark as Complete)</label>
+            <input
+              id="endDate"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+            <small>Set this to mark the task as completed on a specific date</small>
           </div>
 
           <div className="form-actions">

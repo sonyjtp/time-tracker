@@ -1,10 +1,15 @@
+import sys
 from datetime import datetime
 from pathlib import Path
 
 import openpyxl
 
-from database import Base, get_engine, get_session
-from models import Activity, Settings, Task
+# Add src to path so app can be imported when run as a module (must be before app imports)
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+# noqa: E402 - path manipulation required before app imports
+from app.database import Base, get_engine, get_session  # noqa: E402
+from app.models import Activity, Settings, Task  # noqa: E402
 
 
 def load_excel_data():

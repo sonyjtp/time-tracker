@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from database import get_db
-from models import Activity, Task, TimeSpentCache
-from schemas import ActivityCreate, ActivityResponse, ActivityUpdate
+from app.database import get_db
+from app.models import Activity, Task, TimeSpentCache
+from app.schemas import ActivityCreate, ActivityResponse, ActivityUpdate
 
 router = APIRouter(prefix="/api/activities", tags=["activities"])
 
@@ -61,10 +61,16 @@ def update_activity(activity_id: int, activity: ActivityUpdate, db: Session = De
     if not db_activity:
         raise HTTPException(status_code=404, detail="Activity not found")
 
+    # If task_id is being updated, validate it exists
+    update_data = activity.model_dump(exclude_unset=True)
+    if "task_id" in update_data and update_data["task_id"]:
+        task = db.query(Task).filter(Task.id == update_data["task_id"]).first()
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+
     # Store original date for cache invalidation
     original_date = db_activity.date
 
-    update_data = activity.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_activity, key, value)
 

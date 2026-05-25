@@ -1,7 +1,7 @@
 from datetime import date, time
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class TaskCreate(BaseModel):
@@ -10,6 +10,7 @@ class TaskCreate(BaseModel):
     sub_type: Optional[str] = ""
     source: Optional[str] = ""
     links: Optional[str] = None
+    end_date: Optional[date] = None
 
 
 class TaskUpdate(BaseModel):
@@ -18,9 +19,12 @@ class TaskUpdate(BaseModel):
     sub_type: Optional[str] = ""
     source: Optional[str] = ""
     links: Optional[str] = None
+    end_date: Optional[date] = None
 
 
 class TaskResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     type: Optional[str] = ""
@@ -28,10 +32,8 @@ class TaskResponse(BaseModel):
     source: Optional[str] = ""
     links: Optional[str]
     start_date: Optional[date] = None
+    last_worked_date: Optional[date] = None
     end_date: Optional[date] = None
-
-    class Config:
-        from_attributes = True
 
 
 class ActivityCreate(BaseModel):
@@ -52,6 +54,8 @@ class ActivityUpdate(BaseModel):
 
 
 class ActivityResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     task_id: int
     date: date
@@ -60,9 +64,6 @@ class ActivityResponse(BaseModel):
     comments: Optional[str]
     links: Optional[str]
     task: TaskResponse
-
-    class Config:
-        from_attributes = True
 
 
 class TimeSpentByTask(BaseModel):

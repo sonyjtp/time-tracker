@@ -4,27 +4,36 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from database import get_db
-from models import Activity, Task
-from schemas import TaskCreate, TaskResponse, TaskUpdate
+from app.database import get_db
+from app.models import Activity, Task
+from app.schemas import TaskCreate, TaskResponse, TaskUpdate
 
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 
 
+def get_today_ct():
+    """Get today's date in CT timezone"""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    ct = ZoneInfo("America/Chicago")
+    return datetime.now(ct).date()
+
+
 def enrich_task_with_dates(task: Task, db: Session) -> TaskResponse:
-    """Add start_date and end_date to a task based on its activities"""
+    """Add start_date, last_worked_date, and end_date to a task based on its activities"""
     min_max = (
         db.query(
-            func.min(Activity.date).label("start_date"), func.max(Activity.date).label("end_date")
+            func.min(Activity.date).label("start_date"),
+            func.max(Activity.date).label("last_worked_date"),
         )
         .filter(Activity.task_id == task.id)
         .first()
     )
 
     start_date = min_max.start_date if min_max and min_max.start_date else None
-    end_date = min_max.end_date if min_max and min_max.end_date else None
-
-    print(f"Task {task.id} ({task.name}): start={start_date}, end={end_date}")
+    last_worked_date = min_max.last_worked_date if min_max and min_max.last_worked_date else None
+    end_date = task.end_date
 
     return TaskResponse(
         id=task.id,
@@ -34,6 +43,7 @@ def enrich_task_with_dates(task: Task, db: Session) -> TaskResponse:
         source=task.source,
         links=task.links,
         start_date=start_date,
+        last_worked_date=last_worked_date,
         end_date=end_date,
     )
 
@@ -54,7 +64,7 @@ def create_task(task: TaskCreate, db: Session = Depends(get_db)):
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
-    return db_task
+    return enrich_task_with_dates(db_task, db)
 
 
 @router.get("/{task_id}", response_model=TaskResponse)

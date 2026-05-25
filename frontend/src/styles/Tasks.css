@@ -1,5 +1,6 @@
 .tasks-page {
   width: 100%;
+  padding: 0 1rem;
 }
 
 .date-range-selector {
@@ -87,38 +88,42 @@ th.sortable.sorted {
 
 .tasks-table-container {
   width: 100%;
-  overflow-x: auto;
+  overflow-x: visible;
 }
 
 .tasks-table {
   width: 100%;
-  table-layout: auto;
-  white-space: nowrap;
+  table-layout: fixed;
+  white-space: normal;
 }
 
 th, td {
-  padding: 0.5rem 0.5rem;
+  padding: 0.75rem;
   text-align: left;
   font-size: 0.9rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
-th:nth-child(1) { min-width: 200px; } /* Task Name */
-th:nth-child(2) { min-width: 110px; } /* Type */
-th:nth-child(3) { min-width: 110px; } /* Sub-type */
-th:nth-child(4) { min-width: 110px; } /* Source */
-th:nth-child(5) { min-width: 130px; } /* Start Date */
-th:nth-child(6) { min-width: 130px; } /* Last Worked */
-th:nth-child(7) { min-width: 80px; }  /* Links */
-th:nth-child(8) { min-width: 130px; } /* Actions */
+th:nth-child(1) { width: 18%; } /* Task Name */
+th:nth-child(2) { width: 11%; } /* Type */
+th:nth-child(3) { width: 11%; } /* Sub-type */
+th:nth-child(4) { width: 11%; } /* Source */
+th:nth-child(5) { width: 11%; } /* Start Date */
+th:nth-child(6) { width: 11%; } /* Last Worked */
+th:nth-child(7) { width: 11%; } /* Task Ended */
+th:nth-child(8) { width: 8%; }  /* Links */
+th:nth-child(9) { width: 8%; } /* Delete */
 
-td:nth-child(1) { min-width: 200px; }
-td:nth-child(2) { min-width: 110px; }
-td:nth-child(3) { min-width: 110px; }
-td:nth-child(4) { min-width: 110px; }
-td:nth-child(5) { min-width: 130px; }
-td:nth-child(6) { min-width: 130px; }
-td:nth-child(7) { min-width: 80px; }
-td:nth-child(8) { min-width: 130px; }
+td:nth-child(1) { width: 18%; }
+td:nth-child(2) { width: 11%; }
+td:nth-child(3) { width: 11%; }
+td:nth-child(4) { width: 11%; }
+td:nth-child(5) { width: 11%; }
+td:nth-child(6) { width: 11%; }
+td:nth-child(7) { width: 11%; }
+td:nth-child(8) { width: 8%; }
+td:nth-child(9) { width: 8%; }
 
 .tasks-table a {
   color: #3498db;
@@ -127,6 +132,23 @@ td:nth-child(8) { min-width: 130px; }
 
 .tasks-table a:hover {
   text-decoration: underline;
+}
+
+.link-cell {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.link-cell:hover {
+  text-decoration: underline;
+}
+
+.edit-link {
+  margin-left: 0.5rem;
+  font-size: 0.9rem;
+  padding: 0;
+  min-width: auto;
 }
 
 .action-buttons {
@@ -139,12 +161,27 @@ td:nth-child(8) { min-width: 130px; }
   font-size: 0.85rem;
 }
 
-.btn-danger {
-  background-color: #e74c3c;
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  color: #333;
+  transition: transform 0.2s, opacity 0.2s;
+  display: inline-block;
+  min-width: auto;
+  width: auto;
 }
 
-.btn-danger:hover {
-  background-color: #c0392b;
+.btn-icon:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
+
+
+.btn-icon.btn-delete:hover {
+  color: #e74c3c;
 }
 
 .btn-primary {

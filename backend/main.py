@@ -1,31 +1,23 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+"""
+Backwards-compatible entry point for the FastAPI application.
 
-from database import Base, get_engine
-from routes import activities, reports, settings, tasks
+This file imports and re-exports the app from app.main to maintain
+backwards compatibility with existing deployment scripts and configurations.
 
-app = FastAPI(title="Time Tracker API")
+The actual app code is in: src/app/main.py
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+Imports are resolved via pythonpath = ["src"] in pytest.ini and pyproject.toml
+so imports use: from app.database import get_db (not from src.app.database)
+"""
 
-Base.metadata.create_all(bind=get_engine())
+import sys
+from pathlib import Path
 
-app.include_router(activities.router)
-app.include_router(tasks.router)
-app.include_router(reports.router)
-app.include_router(settings.router)
+# Add src to path so app can be imported (must be before app imports)
+sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-
-@app.get("/api/health")
-def health_check():
-    return {"status": "ok"}
-
+# noqa: E402 - path manipulation required before app imports
+from app.main import app  # noqa: E402
 
 if __name__ == "__main__":
     import uvicorn

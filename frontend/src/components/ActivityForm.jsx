@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { formatDate } from '../utils'
 import '../styles/Modal.css'
 
 function ActivityForm({ activity, tasks, date, onSave, onClose }) {
@@ -21,8 +22,14 @@ function ActivityForm({ activity, tasks, date, onSave, onClose }) {
   const [error, setError] = useState(null)
 
   const getFilteredTasks = () => {
-    if (!taskSearch) return tasks.sort((a, b) => a.name.localeCompare(b.name))
-    return tasks
+    const dateStr = formatDate(date)
+    const availableTasks = tasks.filter(task =>
+      // Exclude tasks with end_date before the activity date
+      !task.end_date || task.end_date >= dateStr
+    )
+
+    if (!taskSearch) return availableTasks.sort((a, b) => a.name.localeCompare(b.name))
+    return availableTasks
       .filter(task => task.name.toLowerCase().includes(taskSearch.toLowerCase()))
       .sort((a, b) => a.name.localeCompare(b.name))
   }
@@ -52,7 +59,7 @@ function ActivityForm({ activity, tasks, date, onSave, onClose }) {
 
     const activityData = {
       task_id: parseInt(taskId),
-      date: date.toISOString().split('T')[0],
+      date: formatDate(date),
       start_time: startTime,
       end_time: finalEndTime,
       comments: comments || null,

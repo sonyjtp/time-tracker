@@ -32,11 +32,17 @@ describe('API Client', () => {
     vi.clearAllMocks()
   })
 
-  describe('Activities API', () => {
+   describe('Activities API', () => {
     it('should format date correctly for getByDate', () => {
-      const testDate = new Date('2026-05-23')
+      // Create date in local timezone (not UTC)
+      const testDate = new Date(2026, 4, 23)
       const expected = '2026-05-23'
-      expect(testDate.toISOString().split('T')[0]).toBe(expected)
+      // Format using local date to match formatDate behavior
+      const year = testDate.getFullYear()
+      const month = String(testDate.getMonth() + 1).padStart(2, '0')
+      const day = String(testDate.getDate()).padStart(2, '0')
+      const formatted = `${year}-${month}-${day}`
+      expect(formatted).toBe(expected)
     })
 
     it('should have all activity methods', () => {
@@ -47,7 +53,8 @@ describe('API Client', () => {
     })
 
     it('should call getByDate with task filter and make GET request', () => {
-      const testDate = new Date('2026-05-23')
+      // Create date in local timezone (not UTC)
+      const testDate = new Date(2026, 4, 23)
       activities.getByDate(testDate, 1)
       expect(mockGet).toHaveBeenCalledWith('/activities', {
         params: { target_date: '2026-05-23', task_id: 1 }
@@ -55,7 +62,8 @@ describe('API Client', () => {
     })
 
     it('should call getByDate without task filter and make GET request', () => {
-      const testDate = new Date('2026-05-23')
+      // Create date in local timezone (not UTC)
+      const testDate = new Date(2026, 4, 23)
       activities.getByDate(testDate)
       expect(mockGet).toHaveBeenCalledWith('/activities', {
         params: { target_date: '2026-05-23' }
@@ -125,10 +133,11 @@ describe('API Client', () => {
     })
   })
 
-  describe('Reports API', () => {
+   describe('Reports API', () => {
     it('should call getTimeSentSummary with date range and make GET request', () => {
-      const startDate = new Date('2026-05-01')
-      const endDate = new Date('2026-05-31')
+      // Create dates in local timezone (not UTC)
+      const startDate = new Date(2026, 4, 1)
+      const endDate = new Date(2026, 4, 31)
       reports.getTimeSentSummary(startDate, endDate)
       expect(mockGet).toHaveBeenCalledWith('/reports/time-spent-summary', {
         params: { start_date: '2026-05-01', end_date: '2026-05-31' }
@@ -143,7 +152,8 @@ describe('API Client', () => {
     })
 
     it('should call getTimeSentSummary with only start date and make GET request', () => {
-      const startDate = new Date('2026-05-01')
+      // Create date in local timezone (not UTC)
+      const startDate = new Date(2026, 4, 1)
       reports.getTimeSentSummary(startDate)
       expect(mockGet).toHaveBeenCalledWith('/reports/time-spent-summary', {
         params: { start_date: '2026-05-01' }
@@ -151,7 +161,8 @@ describe('API Client', () => {
     })
 
     it('should call getTimeSentSummary with only end date and make GET request', () => {
-      const endDate = new Date('2026-05-31')
+      // Create date in local timezone (not UTC)
+      const endDate = new Date(2026, 4, 31)
       reports.getTimeSentSummary(null, endDate)
       expect(mockGet).toHaveBeenCalledWith('/reports/time-spent-summary', {
         params: { end_date: '2026-05-31' }
@@ -159,8 +170,9 @@ describe('API Client', () => {
     })
 
     it('should call getTimeSpentDaily with date range and make GET request', () => {
-      const startDate = new Date('2026-05-01')
-      const endDate = new Date('2026-05-31')
+      // Create dates in local timezone (not UTC)
+      const startDate = new Date(2026, 4, 1)
+      const endDate = new Date(2026, 4, 31)
       reports.getTimeSpentDaily(startDate, endDate)
       expect(mockGet).toHaveBeenCalledWith('/reports/time-spent-daily', {
         params: { start_date: '2026-05-01', end_date: '2026-05-31' }
@@ -175,7 +187,8 @@ describe('API Client', () => {
     })
 
     it('should call getTimeSpentDaily with only start date and make GET request', () => {
-      const startDate = new Date('2026-05-01')
+      // Create date in local timezone (not UTC)
+      const startDate = new Date(2026, 4, 1)
       reports.getTimeSpentDaily(startDate)
       expect(mockGet).toHaveBeenCalledWith('/reports/time-spent-daily', {
         params: { start_date: '2026-05-01' }
@@ -183,7 +196,8 @@ describe('API Client', () => {
     })
 
     it('should call getTimeSpentDaily with only end date and make GET request', () => {
-      const endDate = new Date('2026-05-31')
+      // Create date in local timezone (not UTC)
+      const endDate = new Date(2026, 4, 31)
       reports.getTimeSpentDaily(null, endDate)
       expect(mockGet).toHaveBeenCalledWith('/reports/time-spent-daily', {
         params: { end_date: '2026-05-31' }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { reports, tasks as tasksApi } from '../api'
+import { formatHoursToHHMM, getDateInCT, parseDateStringToLocal } from '../utils'
 import '../styles/TimeSpent.css'
 
 function TimeSpent() {
@@ -22,31 +23,31 @@ function TimeSpent() {
     loadReferenceDate()
   }, [])
 
-  const loadReferenceDate = async () => {
-    try {
-      const [settingsRes, tasksRes] = await Promise.all([
-        axios.get('http://localhost:8000/api/settings/reference_date'),
-        tasksApi.getAll()
-      ])
-      setAllTasks(tasksRes.data)
-      const refDate = settingsRes.data.value
-      setStartDate(refDate)
-      setEndDate(new Date().toISOString().split('T')[0])
-      loadData(refDate, new Date().toISOString().split('T')[0])
-    } catch (err) {
-      setError('Failed to load settings: ' + err.message)
-      setLoading(false)
-    }
-  }
+   const loadReferenceDate = async () => {
+     try {
+       const [settingsRes, tasksRes] = await Promise.all([
+         axios.get('http://localhost:8000/api/settings/reference_date'),
+         tasksApi.getAll()
+       ])
+        setAllTasks(tasksRes.data)
+        const refDate = settingsRes.data.value
+        setStartDate(refDate)
+        setEndDate(getDateInCT())
+        loadData(refDate, getDateInCT())
+     } catch (err) {
+       setError('Failed to load settings: ' + err.message)
+       setLoading(false)
+     }
+   }
 
-  const loadData = async (start, end) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const startDateObj = new Date(start)
-      const endDateObj = new Date(end)
+   const loadData = async (start, end) => {
+     setLoading(true)
+     setError(null)
+     try {
+       const startDateObj = parseDateStringToLocal(start)
+       const endDateObj = parseDateStringToLocal(end)
 
-      const [summaryRes, dailyRes] = await Promise.all([
+       const [summaryRes, dailyRes] = await Promise.all([
         reports.getTimeSentSummary(startDateObj, endDateObj),
         reports.getTimeSpentDaily(startDateObj, endDateObj),
       ])
@@ -135,14 +136,85 @@ function TimeSpent() {
       .sort((a, b) => a.name.localeCompare(b.name))
   }
 
-  const handleSort = (column) => {
-    if (sortColumn === column) {
-      setSortAscending(!sortAscending)
-    } else {
-      setSortColumn(column)
-      setSortAscending(true)
-    }
-  }
+   const getDailyAverage = () => {
+     // Parse dates as local dates (not UTC)
+     const [startYear, startMonth, startDay] = startDate.split('-').map(Number)
+     const [endYear, endMonth, endDay] = endDate.split('-').map(Number)
+     const startDateObj = new Date(startYear, startMonth - 1, startDay)
+     const endDateObj = new Date(endYear, endMonth - 1, endDay)
+
+     // Filter daily data to only include dates within the selected range
+     const filteredDailyData = dailyData.filter(item => {
+       // Parse the item date as a local date
+       const [itemYear, itemMonth, itemDay] = item.date.split('-').map(Number)
+       const itemDate = new Date(itemYear, itemMonth - 1, itemDay)
+       const inRange = itemDate >= startDateObj && itemDate <= endDateObj
+       return inRange
+     })
+
+     // Group daily data by date
+     const dailyTotals = {}
+     filteredDailyData.forEach(item => {
+       if (!dailyTotals[item.date]) {
+         dailyTotals[item.date] = 0
+       }
+       dailyTotals[item.date] += item.hours
+     })
+
+     // Sort dates chronologically
+     const sortedDates = Object.keys(dailyTotals).sort()
+
+     // Calculate cumulative average for each day
+     const result = []
+     let cumulativeHours = 0
+
+     sortedDates.forEach((date, index) => {
+       cumulativeHours += dailyTotals[date]
+       // Parse as local date
+       const [dateYear, dateMonth, dateDay] = date.split('-').map(Number)
+       const currentDate = new Date(dateYear, dateMonth - 1, dateDay)
+       const daysDiff = Math.floor((currentDate - startDateObj) / (1000 * 60 * 60 * 24)) + 1
+       const cumulativeAverage = cumulativeHours / daysDiff
+
+       result.push({
+         date,
+         total_hours: dailyTotals[date],
+         average_hours: cumulativeAverage
+       })
+     })
+
+     return result
+   }
+
+   const getDaysInRange = () => {
+     const [startYear, startMonth, startDay] = startDate.split('-').map(Number)
+     const [endYear, endMonth, endDay] = endDate.split('-').map(Number)
+     const startDateObj = new Date(startYear, startMonth - 1, startDay)
+     const endDateObj = new Date(endYear, endMonth - 1, endDay)
+     const timeDiff = Math.abs(endDateObj - startDateObj)
+     return Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) + 1
+   }
+
+   const getDailyTotals = () => {
+     // Group all daily data by date and sum the hours
+     const dailyTotals = {}
+     dailyData.forEach(item => {
+       if (!dailyTotals[item.date]) {
+         dailyTotals[item.date] = 0
+       }
+       dailyTotals[item.date] += item.hours
+     })
+
+     // Convert to array and sort chronologically
+     const result = Object.entries(dailyTotals)
+       .map(([date, totalHours]) => ({
+         date,
+         total_hours: totalHours
+       }))
+       .sort((a, b) => new Date(a.date + 'T00:00:00') - new Date(b.date + 'T00:00:00'))
+
+     return result
+   }
 
   const getSortedSummaryData = () => {
     const filtered = getFilteredSummaryData()
@@ -265,235 +337,217 @@ function TimeSpent() {
         <button onClick={handleDateChange} className="btn-apply">Apply</button>
       </div>
 
-      <div className="view-tabs">
-        <button
-          className={`tab ${activeView === 'summary' ? 'active' : ''}`}
-          onClick={() => setActiveView('summary')}
-        >
-          Summary by Task
-        </button>
-        <button
-          className={`tab ${activeView === 'type' ? 'active' : ''}`}
-          onClick={() => setActiveView('type')}
-        >
-          Summary by Type
-        </button>
-        <button
-          className={`tab ${activeView === 'subtype' ? 'active' : ''}`}
-          onClick={() => setActiveView('subtype')}
-        >
-          Summary by Sub-Type
-        </button>
-        <button
-          className={`tab ${activeView === 'daily' ? 'active' : ''}`}
-          onClick={() => setActiveView('daily')}
-        >
-          Daily Breakdown
-        </button>
-      </div>
+       <div className="view-tabs">
+         <button
+           className={`tab ${activeView === 'summary' ? 'active' : ''}`}
+           onClick={() => setActiveView('summary')}
+         >
+           Summary by Task
+         </button>
+         <button
+           className={`tab ${activeView === 'type' ? 'active' : ''}`}
+           onClick={() => setActiveView('type')}
+         >
+           Summary by Type
+         </button>
+         <button
+           className={`tab ${activeView === 'subtype' ? 'active' : ''}`}
+           onClick={() => setActiveView('subtype')}
+         >
+           Summary by Sub-Type
+         </button>
+         <button
+           className={`tab ${activeView === 'daily' ? 'active' : ''}`}
+           onClick={() => setActiveView('daily')}
+         >
+           Daily Breakdown
+         </button>
+         <button
+           className={`tab ${activeView === 'dailyAverage' ? 'active' : ''}`}
+           onClick={() => setActiveView('dailyAverage')}
+         >
+           Daily Average
+         </button>
+       </div>
 
-      {activeView === 'summary' && (
-        <div className="summary-view">
-          {summaryData.length === 0 ? (
-            <div className="empty-state">No time spent data</div>
-          ) : (
-            <table className="summary-table">
-              <thead>
-                <tr>
-                  <th
-                    className={`sortable ${sortColumn === 'task_name' ? 'sorted' : ''}`}
-                    onClick={() => handleSort('task_name')}
-                  >
-                    Task {sortColumn === 'task_name' && (sortAscending ? '↑' : '↓')}
-                  </th>
-                  <th
-                    className={`sortable ${sortColumn === 'total_hours' ? 'sorted' : ''}`}
-                    onClick={() => handleSort('total_hours')}
-                  >
-                    Total Time {sortColumn === 'total_hours' && (sortAscending ? '↑' : '↓')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {getSortedSummaryData().map(item => (
-                  <tr key={item.task_id}>
-                    <td>{item.task_name}</td>
-                    <td>{item.total_hours.toFixed(2)} hours</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
+       {activeView === 'summary' && (
+         <div className="summary-view">
+           {summaryData.length === 0 ? (
+             <div className="empty-state">No time spent data</div>
+           ) : (
+             <table className="summary-table">
+               <thead>
+                 <tr>
+                   <th
+                     className={`sortable ${sortColumn === 'task_name' ? 'sorted' : ''}`}
+                     onClick={() => handleSort('task_name')}
+                   >
+                     Task {sortColumn === 'task_name' && (sortAscending ? '↑' : '↓')}
+                   </th>
+                   <th
+                     className={`sortable ${sortColumn === 'total_hours' ? 'sorted' : ''}`}
+                     onClick={() => handleSort('total_hours')}
+                   >
+                     Total Time (hours) {sortColumn === 'total_hours' && (sortAscending ? '↑' : '↓')}
+                   </th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {getSortedSummaryData().map(item => (
+                   <tr key={item.task_id}>
+                     <td>{item.task_name}</td>
+                     <td>{formatHoursToHHMM(item.total_hours)}</td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+           )}
+         </div>
+       )}
 
-      {activeView === 'type' && (
-        <div className="summary-view">
-          {summaryData.length === 0 ? (
-            <div className="empty-state">No time spent data</div>
-          ) : (
-            <table className="summary-table">
-              <thead>
-                <tr>
-                  <th
-                    className={`sortable ${sortColumn === 'type' ? 'sorted' : ''}`}
-                    onClick={() => handleSort('type')}
-                  >
-                    Type {sortColumn === 'type' && (sortAscending ? '↑' : '↓')}
-                  </th>
-                  <th
-                    className={`sortable ${sortColumn === 'total_hours' ? 'sorted' : ''}`}
-                    onClick={() => handleSort('total_hours')}
-                  >
-                    Total Time {sortColumn === 'total_hours' && (sortAscending ? '↑' : '↓')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {getSummaryByType().map(item => (
-                  <tr key={item.type}>
-                    <td>{item.type}</td>
-                    <td>{item.total_hours.toFixed(2)} hours</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
+       {activeView === 'type' && (
+         <div className="summary-view">
+           {summaryData.length === 0 ? (
+             <div className="empty-state">No time spent data</div>
+           ) : (
+             <table className="summary-table">
+               <thead>
+                 <tr>
+                   <th
+                     className={`sortable ${sortColumn === 'type' ? 'sorted' : ''}`}
+                     onClick={() => handleSort('type')}
+                   >
+                     Type {sortColumn === 'type' && (sortAscending ? '↑' : '↓')}
+                   </th>
+                   <th
+                     className={`sortable ${sortColumn === 'total_hours' ? 'sorted' : ''}`}
+                     onClick={() => handleSort('total_hours')}
+                   >
+                     Total Time (hours) {sortColumn === 'total_hours' && (sortAscending ? '↑' : '↓')}
+                   </th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {getSummaryByType().map(item => (
+                   <tr key={item.type}>
+                     <td>{item.type}</td>
+                     <td>{formatHoursToHHMM(item.total_hours)}</td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+           )}
+         </div>
+       )}
 
-      {activeView === 'subtype' && (
-        <div className="summary-view">
-          {summaryData.length === 0 ? (
-            <div className="empty-state">No time spent data</div>
-          ) : (
-            <table className="summary-table">
-              <thead>
-                <tr>
-                  <th
-                    className={`sortable ${sortColumn === 'subtype' ? 'sorted' : ''}`}
-                    onClick={() => handleSort('subtype')}
-                  >
-                    Sub-Type {sortColumn === 'subtype' && (sortAscending ? '↑' : '↓')}
-                  </th>
-                  <th
-                    className={`sortable ${sortColumn === 'total_hours' ? 'sorted' : ''}`}
-                    onClick={() => handleSort('total_hours')}
-                  >
-                    Total Time {sortColumn === 'total_hours' && (sortAscending ? '↑' : '↓')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {getSummaryBySubtype().map(item => (
-                  <tr key={item.subtype}>
-                    <td>{item.subtype}</td>
-                    <td>{item.total_hours.toFixed(2)} hours</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
+       {activeView === 'subtype' && (
+         <div className="summary-view">
+           {summaryData.length === 0 ? (
+             <div className="empty-state">No time spent data</div>
+           ) : (
+             <table className="summary-table">
+               <thead>
+                 <tr>
+                   <th
+                     className={`sortable ${sortColumn === 'subtype' ? 'sorted' : ''}`}
+                     onClick={() => handleSort('subtype')}
+                   >
+                     Sub-Type {sortColumn === 'subtype' && (sortAscending ? '↑' : '↓')}
+                   </th>
+                   <th
+                     className={`sortable ${sortColumn === 'total_hours' ? 'sorted' : ''}`}
+                     onClick={() => handleSort('total_hours')}
+                   >
+                     Total Time (hours) {sortColumn === 'total_hours' && (sortAscending ? '↑' : '↓')}
+                   </th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {getSummaryBySubtype().map(item => (
+                   <tr key={item.subtype}>
+                     <td>{item.subtype}</td>
+                     <td>{formatHoursToHHMM(item.total_hours)}</td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+           )}
+         </div>
+       )}
 
-      {activeView === 'daily' && (
-        <div className="daily-view">
-          {summaryData.length === 0 ? (
-            <div className="empty-state">No time spent data</div>
-          ) : (
-            <>
-              <div className="filter-container">
-                <div className="filter-field">
-                  <label htmlFor="filter-type">Type</label>
-                  <select
-                    id="filter-type"
-                    value={selectedType}
-                    onChange={(e) => {
-                      setSelectedType(e.target.value)
-                      setSelectedSubtype('')
-                    }}
-                  >
-                    <option value="">All Types</option>
-                    {getAvailableTypes().map(type => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </select>
-                </div>
+       {activeView === 'daily' && (
+         <div className="daily-view">
+           {summaryData.length === 0 ? (
+             <div className="empty-state">No time spent data</div>
+           ) : (
+             <>
+               <table className="daily-table-summary">
+                 <thead>
+                   <tr>
+                     <th>Date</th>
+                     <th>Hours</th>
+                   </tr>
+                 </thead>
+                  <tbody>
+                    {getDailyTotals().map((item, idx) => {
+                      // Format date directly from YYYY-MM-DD string without timezone conversion
+                      const [year, month, day] = item.date.split('-')
+                      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                      const dateStr = `${monthNames[parseInt(month) - 1]} ${parseInt(day)}, ${year}`
+                      return (
+                        <tr key={idx}>
+                          <td>{dateStr}</td>
+                          <td>{formatHoursToHHMM(item.total_hours)}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+               </table>
+             </>
+           )}
+         </div>
+       )}
 
-                <div className="filter-field">
-                  <label htmlFor="filter-subtype">Sub-type</label>
-                  <select
-                    id="filter-subtype"
-                    value={selectedSubtype}
-                    onChange={(e) => setSelectedSubtype(e.target.value)}
-                  >
-                    <option value="">All Sub-types</option>
-                    {getAvailableSubtypes().map(subtype => (
-                      <option key={subtype} value={subtype}>{subtype}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="filter-field">
-                  <label htmlFor="filter-task">Task</label>
-                  <select
-                    id="filter-task"
-                    value={selectedTask}
-                    onChange={(e) => setSelectedTask(e.target.value)}
-                  >
-                    <option value="">All Tasks</option>
-                    {getAvailableTasks().map(task => (
-                      <option key={task.id} value={task.id}>{task.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <button onClick={() => {
-                  setSelectedTask('')
-                  setSelectedType('')
-                  setSelectedSubtype('')
-                }} className="btn-clear">Clear Filters</button>
-              </div>
-
-              <div className="daily-breakdown">
-                {getFilteredSummaryData().length === 0 ? (
-                  <div className="empty-state">No matching tasks</div>
-                ) : (
-                  getFilteredSummaryData().map(task => {
-                    const taskDailyData = getDailyDataForTask(task.task_id)
-                    return (
-                      <div key={task.task_id} className="task-daily-section">
-                        <h3>{task.task_name}</h3>
-                        {taskDailyData.length === 0 ? (
-                          <p className="no-data">No activities recorded</p>
-                        ) : (
-                          <table className="daily-table">
-                            <thead>
-                              <tr>
-                                <th>Date</th>
-                                <th>Hours</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {taskDailyData.map((item, idx) => (
-                                <tr key={idx}>
-                                  <td>{new Date(item.date).toDateString()}</td>
-                                  <td>{item.hours.toFixed(2)} hours</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        )}
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      )}
+       {activeView === 'dailyAverage' && (
+         <div className="daily-average-view">
+           {dailyData.length === 0 ? (
+             <div className="empty-state">No time spent data</div>
+           ) : (
+             <>
+               <div className="range-info">
+                 <p>Date range: <strong>{startDate}</strong> to <strong>{endDate}</strong> ({getDaysInRange()} days)</p>
+                 <p>Cumulative Average = Sum of hours from start date to that day ÷ Number of calendar days from start</p>
+               </div>
+               <div className="daily-average-scroll-container">
+                 <table className="daily-average-table">
+                   <thead>
+                     <tr>
+                       <th>Date</th>
+                       <th>Hours Worked</th>
+                       <th>Cumulative Average</th>
+                     </tr>
+                   </thead>
+                    <tbody>
+                      {getDailyAverage().map((item, idx) => {
+                        // Format date directly from YYYY-MM-DD string without timezone conversion
+                        const [year, month, day] = item.date.split('-')
+                        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                        const dateStr = `${monthNames[parseInt(month) - 1]} ${parseInt(day)}, ${year}`
+                        return (
+                          <tr key={idx}>
+                            <td>{dateStr}</td>
+                            <td>{formatHoursToHHMM(item.total_hours)}</td>
+                            <td>{formatHoursToHHMM(item.average_hours)}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                 </table>
+               </div>
+             </>
+           )}
+         </div>
+       )}
     </div>
   )
 }

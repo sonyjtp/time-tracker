@@ -1,11 +1,11 @@
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
-from database import get_db
-from models import Settings
+from app.database import get_db
+from app.models import Settings
 
 router = APIRouter(prefix="/api/settings", tags=["settings"])
 
@@ -15,11 +15,10 @@ class SettingUpdate(BaseModel):
 
 
 class SettingResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     key: str
     value: str
-
-    class Config:
-        from_attributes = True
 
 
 @router.get("/{key}", response_model=SettingResponse)

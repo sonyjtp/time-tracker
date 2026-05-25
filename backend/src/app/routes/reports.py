@@ -1,13 +1,15 @@
+import datetime
 import json
 from datetime import date, time
 from typing import List
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
-from database import get_db
-from models import Activity, Task, TimeSpentCache
-from schemas import TimeSpentByDay, TimeSpentByTask
+from app.database import get_db
+from app.models import Activity, Task, TimeSpentCache
+from app.schemas import TimeSpentByDay, TimeSpentByTask
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
@@ -37,9 +39,11 @@ def get_cache_key(start_date, end_date):
 
 def is_cache_valid(start_date, end_date):
     """Check if we should use cache (both dates are in the past)"""
-    today = date.today()
+    # Use CT timezone to match frontend
+    ct = ZoneInfo("America/Chicago")
+    today_ct = datetime.datetime.now(ct).date()
     # Don't cache if range includes today or future dates
-    if end_date and end_date >= today:
+    if end_date and end_date >= today_ct:
         return False
     return True
 

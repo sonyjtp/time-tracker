@@ -1,21 +1,21 @@
 [tool.pytest.ini_options]
-testpaths = ["."]
+pythonpath = ["src"]
+testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "--cov=. --cov-report=html --cov-report=term-missing --cov-fail-under=85"
+addopts = "--cov=app --cov-report=html --cov-report=term-missing --cov-fail-under=85"
 
 [tool.coverage.run]
-source = ["."]
+source = ["src/app"]
 omit = [
     "*/tests/*",
+    "tests/*",
     "*/test_*.py",
     "*/__pycache__/*",
     "*/.venv/*",
     "*/venv/*",
-    "check_coverage.py",
-    "update_coverage.py",
-    "init_db.py",
+    "scripts/*",
 ]
 
 [tool.coverage.report]

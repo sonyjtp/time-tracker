@@ -1,9 +1,14 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, Text, Time
 from sqlalchemy.orm import relationship
 
-from database import Base
+from app.database import Base
+
+
+def utc_now():
+    """Get current UTC time as timezone-aware datetime"""
+    return datetime.now(UTC)
 
 
 class Task(Base):
@@ -15,8 +20,9 @@ class Task(Base):
     sub_type = Column(String)
     source = Column(String)
     links = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    end_date = Column(Date, nullable=True)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
     activities = relationship("Activity", back_populates="task", cascade="all, delete-orphan")
 
@@ -31,8 +37,8 @@ class Activity(Base):
     end_time = Column(Time, nullable=True)
     comments = Column(Text, nullable=True)
     links = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
     task = relationship("Task", back_populates="activities")
 
@@ -43,8 +49,8 @@ class Settings(Base):
     id = Column(Integer, primary_key=True, index=True)
     key = Column(String, unique=True, index=True)
     value = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
 
 class TimeSpentCache(Base):
@@ -55,5 +61,5 @@ class TimeSpentCache(Base):
     start_date = Column(Date, index=True)
     end_date = Column(Date, index=True)
     data = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)

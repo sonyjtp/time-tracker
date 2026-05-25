@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { activities, tasks } from '../api'
 import ActivityForm from '../components/ActivityForm'
+import { formatHoursToHHMM, getTodayLocalDate, formatDate, getDateInCT, parseDateStringToLocal } from '../utils'
 import '../styles/DailyActivity.css'
 
 function DailyActivity() {
@@ -12,6 +13,10 @@ function DailyActivity() {
   const [error, setError] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [editingActivity, setEditingActivity] = useState(null)
+  const [inlineEditingId, setInlineEditingId] = useState(null)
+  const [inlineEditField, setInlineEditField] = useState(null)
+  const [inlineEditValue, setInlineEditValue] = useState('')
+  const [taskSuggestions, setTaskSuggestions] = useState([])
 
   useEffect(() => {
     loadData()
@@ -47,16 +52,11 @@ function DailyActivity() {
   }
 
   const handleToday = () => {
-    setCurrentDate(new Date())
+    setCurrentDate(parseDateStringToLocal(getDateInCT()))
   }
 
   const handleAddActivity = () => {
     setEditingActivity(null)
-    setShowModal(true)
-  }
-
-  const handleEditActivity = (activity) => {
-    setEditingActivity(activity)
     setShowModal(true)
   }
 
@@ -69,6 +69,150 @@ function DailyActivity() {
         setError('Failed to delete activity: ' + err.message)
       }
     }
+  }
+
+  const handleStartInlineEdit = (activity, field) => {
+    setInlineEditingId(activity.id)
+    setInlineEditField(field)
+    setInlineEditValue(activity[field] || '')
+  }
+
+  const handleSaveInlineEdit = async (activityId, overrideTaskId = null) => {
+    if (!inlineEditField) return
+
+    const updatedData = {
+      [inlineEditField]: inlineEditField === 'task_id' ? (overrideTaskId || parseInt(inlineEditValue)) : inlineEditValue
+    }
+
+    try {
+      await activities.update(activityId, updatedData)
+      setInlineEditingId(null)
+      setInlineEditField(null)
+      loadData()
+    } catch (err) {
+      setError('Failed to update activity: ' + err.message)
+    }
+  }
+
+  const handleCancelInlineEdit = () => {
+    setInlineEditingId(null)
+    setInlineEditField(null)
+    setInlineEditValue('')
+  }
+
+  const handleKeyDown = (e, activityId) => {
+    if (e.key === 'Enter') {
+      handleSaveInlineEdit(activityId)
+    } else if (e.key === 'Escape') {
+      handleCancelInlineEdit()
+    }
+  }
+
+  const renderEditableCell = (activity, field, displayValue) => {
+    const isEditing = inlineEditingId === activity.id && inlineEditField === field
+    const inputType = field === 'comments' ? 'text' : 'time'
+
+    return isEditing ? (
+      <input
+        autoFocus
+        type={inputType}
+        value={inlineEditValue}
+        onChange={(e) => setInlineEditValue(e.target.value)}
+        onBlur={() => handleSaveInlineEdit(activity.id)}
+        onKeyDown={(e) => handleKeyDown(e, activity.id)}
+        className="inline-edit-input"
+      />
+    ) : (
+      <span
+        onClick={() => handleStartInlineEdit(activity, field)}
+        className="editable-cell"
+        title="Click to edit"
+      >
+        {displayValue || '-'}
+      </span>
+    )
+  }
+
+  const renderTaskDropdown = (activity) => {
+    const isEditing = inlineEditingId === activity.id && inlineEditField === 'task_id'
+
+    if (isEditing) {
+      const filteredTasks = tasks_list.filter(task =>
+        task.name.toLowerCase().includes(inlineEditValue.toLowerCase())
+      )
+
+      const handleTaskSelect = (taskId, taskName) => {
+        setInlineEditValue(taskName)
+        setTaskSuggestions([])
+        handleSaveInlineEdit(activity.id, taskId)
+      }
+
+      return (
+        <div className="autocomplete-wrapper">
+          <input
+            autoFocus
+            type="text"
+            value={inlineEditValue}
+            onChange={(e) => {
+              setInlineEditValue(e.target.value)
+              setTaskSuggestions(
+                e.target.value.length > 0
+                  ? tasks_list.filter(task =>
+                      task.name.toLowerCase().includes(e.target.value.toLowerCase())
+                    )
+                  : []
+              )
+            }}
+            onBlur={() => {
+              setTimeout(() => {
+                setInlineEditingId(null)
+                setInlineEditField(null)
+                setTaskSuggestions([])
+              }, 200)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && filteredTasks.length > 0) {
+                handleTaskSelect(filteredTasks[0].id, filteredTasks[0].name)
+              } else if (e.key === 'Escape') {
+                setInlineEditingId(null)
+                setInlineEditField(null)
+                setTaskSuggestions([])
+              }
+            }}
+            className="inline-edit-input"
+            placeholder="Type task name..."
+          />
+          {inlineEditValue && filteredTasks.length > 0 && (
+            <div className="autocomplete-suggestions">
+              {filteredTasks.map(task => (
+                <div
+                  key={task.id}
+                  className="autocomplete-suggestion"
+                  onClick={() => handleTaskSelect(task.id, task.name)}
+                >
+                  {task.name}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    return (
+      <span
+        onClick={() => {
+          setInlineEditingId(activity.id)
+          setInlineEditField('task_id')
+          setInlineEditValue(activity.task.name)
+          setTaskSuggestions([])
+        }}
+        className="editable-cell"
+        title="Click to change task"
+      >
+        {activity.task.name || '-'}
+      </span>
+    )
   }
 
   const handleSaveActivity = async (activityData) => {
@@ -87,9 +231,17 @@ function DailyActivity() {
 
   const getTasksForDay = () => {
     const taskIds = new Set(activities_list.map(a => a.task_id))
-    return tasks_list
+    const tasksOnDay = tasks_list
       .filter(task => taskIds.has(task.id))
       .sort((a, b) => a.name.localeCompare(b.name))
+
+    // Filter out tasks with end_date before current date
+    const currentDateStr = formatDate(currentDate)
+    return tasksOnDay.filter(task => {
+      if (!task.end_date) return true
+      // If task has an end_date, only show it on dates <= end_date
+      return task.end_date >= currentDateStr
+    })
   }
 
   const filteredActivities = selectedTaskFilter
@@ -114,14 +266,14 @@ function DailyActivity() {
 
       {error && <div className="error">{error}</div>}
 
-      <div className="date-nav">
-        <button onClick={handlePreviousDay}>← Previous</button>
-        <input
-          type="date"
-          value={currentDate.toISOString().split('T')[0]}
-          onChange={(e) => setCurrentDate(new Date(e.target.value))}
-          className="date-picker"
-        />
+       <div className="date-nav">
+         <button onClick={handlePreviousDay}>← Previous</button>
+         <input
+           type="date"
+           value={formatDate(currentDate)}
+           onChange={(e) => setCurrentDate(new Date(e.target.value))}
+           className="date-picker"
+         />
         <button onClick={handleNextDay}>Next →</button>
         <button onClick={handleToday} className="btn-today">Today</button>
       </div>
@@ -140,26 +292,26 @@ function DailyActivity() {
         </select>
       </div>
 
-      {filteredActivities.length > 0 && (
-        <div className="time-total">
-          Total Time: {totalTime.toFixed(2)} hours
-        </div>
-      )}
+       {filteredActivities.length > 0 && (
+         <div className="time-total">
+           Total Time: {formatHoursToHHMM(totalTime)}
+         </div>
+       )}
 
       {filteredActivities.length === 0 ? (
         <div className="empty-state">No activities for this day</div>
       ) : (
         <table className="activities-table">
           <thead>
-            <tr>
-              <th>Task</th>
-              <th>Type</th>
-              <th>Start Time</th>
-              <th>End Time</th>
-              <th>Duration</th>
-              <th>Comments</th>
-              <th>Actions</th>
-            </tr>
+             <tr>
+               <th>Task</th>
+               <th>Type</th>
+               <th>Start Time</th>
+               <th>End Time</th>
+               <th>Duration</th>
+               <th>Comments</th>
+               <th>Delete</th>
+             </tr>
           </thead>
           <tbody>
             {filteredActivities.map(activity => {
@@ -173,18 +325,23 @@ function DailyActivity() {
                   })()
                 : '-'
               return (
-                <tr key={activity.id}>
-                  <td>{activity.task.name}</td>
-                  <td>{activity.task.type}</td>
-                  <td>{activity.start_time ? activity.start_time.slice(0, 5) : '-'}</td>
-                  <td>{activity.end_time ? activity.end_time.slice(0, 5) : '-'}</td>
-                  <td>{duration}</td>
-                  <td>{activity.comments || '-'}</td>
-                  <td className="action-buttons">
-                    <button onClick={() => handleEditActivity(activity)} className="btn-small">Edit</button>
-                    <button onClick={() => handleDeleteActivity(activity.id)} className="btn-small btn-danger">Delete</button>
-                  </td>
-                </tr>
+                 <tr key={activity.id}>
+                   <td>{renderTaskDropdown(activity)}</td>
+                   <td>{activity.task.type}</td>
+                   <td>{renderEditableCell(activity, 'start_time', activity.start_time ? activity.start_time.slice(0, 5) : '-')}</td>
+                   <td>{renderEditableCell(activity, 'end_time', activity.end_time ? activity.end_time.slice(0, 5) : '-')}</td>
+                   <td>{duration}</td>
+                   <td>{renderEditableCell(activity, 'comments', activity.comments)}</td>
+                    <td className="action-buttons">
+                      <button
+                        onClick={() => handleDeleteActivity(activity.id)}
+                        className="btn-icon btn-delete"
+                        title="Delete activity"
+                      >
+                        🗑️
+                      </button>
+                    </td>
+                 </tr>
               )
             })}
           </tbody>

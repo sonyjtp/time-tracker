@@ -46,12 +46,99 @@
   font-size: 0.85rem;
 }
 
-.btn-danger {
-  background-color: #e74c3c;
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.btn-danger:hover {
-  background-color: #c0392b;
+.btn-icon:hover {
+  opacity: 1;
+}
+
+
+.btn-delete {
+  color: #e74c3c;
+}
+
+.editable-cell {
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+  display: inline-block;
+  user-select: none;
+}
+
+.editable-cell:hover {
+  background-color: #ecf0f1;
+  text-decoration: underline;
+}
+
+.inline-edit-input {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  border: 2px solid #3498db;
+  border-radius: 3px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.inline-edit-input:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+}
+
+.inline-edit-input[type="select"],
+.inline-edit-input[type="time"],
+.inline-edit-input[type="text"],
+select.inline-edit-input {
+  box-sizing: border-box;
+}
+
+.autocomplete-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.autocomplete-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #3498db;
+  border-top: none;
+  border-radius: 0 0 3px 3px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.autocomplete-suggestion {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.autocomplete-suggestion:hover {
+  background-color: #ecf0f1;
+}
+
+.autocomplete-suggestion:first-child {
+  border-radius: 0;
+}
+
+.autocomplete-suggestion:last-child {
+  border-radius: 0 0 3px 3px;
 }
 
 .btn-primary {

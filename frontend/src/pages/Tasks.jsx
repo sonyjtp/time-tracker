@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { tasks } from '../api'
 import TaskForm from '../components/TaskForm'
+import { getTodayLocalDate, formatDateToCT } from '../utils'
 import '../styles/Tasks.css'
 
 function Tasks() {
@@ -27,8 +28,8 @@ function Tasks() {
       const response = await axios.get('http://localhost:8000/api/settings/reference_date')
       const refDate = response.data.value
       setStartDate(refDate)
-      setEndDate(new Date().toISOString().split('T')[0])
-      loadTasks(refDate, new Date().toISOString().split('T')[0])
+      setEndDate(getTodayLocalDate())
+      loadTasks(refDate, getTodayLocalDate())
     } catch (err) {
       setError('Failed to load settings: ' + err.message)
       setLoading(false)
@@ -91,13 +92,16 @@ function Tasks() {
       } else if (sortColumn === 'source') {
         aVal = (a.source || '').toLowerCase()
         bVal = (b.source || '').toLowerCase()
-      } else if (sortColumn === 'start_date') {
-        aVal = a.start_date || ''
-        bVal = b.start_date || ''
-      } else if (sortColumn === 'end_date') {
-        aVal = a.end_date || ''
-        bVal = b.end_date || ''
-      }
+       } else if (sortColumn === 'start_date') {
+         aVal = a.start_date || ''
+         bVal = b.start_date || ''
+       } else if (sortColumn === 'last_worked_date') {
+         aVal = a.last_worked_date || ''
+         bVal = b.last_worked_date || ''
+       } else if (sortColumn === 'end_date') {
+         aVal = a.end_date || ''
+         bVal = b.end_date || ''
+       }
 
       if (aVal < bVal) return sortAscending ? -1 : 1
       if (aVal > bVal) return sortAscending ? 1 : -1
@@ -111,10 +115,6 @@ function Tasks() {
     setShowModal(true)
   }
 
-  const handleEditTask = (task) => {
-    setEditingTask(task)
-    setShowModal(true)
-  }
 
   const handleDeleteTask = async (id) => {
     if (window.confirm('Delete this task?')) {
@@ -202,6 +202,50 @@ function Tasks() {
     )
   }
 
+  const renderLinkCell = (task) => {
+    const isEditing = inlineEditingId === task.id && inlineEditField === 'links'
+
+    return isEditing ? (
+      <input
+        autoFocus
+        type="text"
+        value={inlineEditValue}
+        onChange={(e) => setInlineEditValue(e.target.value)}
+        onBlur={() => handleSaveInlineEdit(task.id)}
+        onKeyDown={(e) => handleKeyDown(e, task.id)}
+        className="inline-edit-input"
+        placeholder="Enter URL"
+      />
+    ) : task.links ? (
+      <div>
+        <a
+          href={task.links}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="link-cell"
+          onClick={(e) => e.stopPropagation()}
+        >
+          Link
+        </a>
+        <span
+          onClick={() => handleStartInlineEdit(task, 'links')}
+          className="editable-cell edit-link"
+          title="Click to edit link"
+        >
+          ✏️
+        </span>
+      </div>
+    ) : (
+      <span
+        onClick={() => handleStartInlineEdit(task, 'links')}
+        className="editable-cell"
+        title="Click to add link"
+      >
+        -
+      </span>
+    )
+  }
+
   if (loading) return <div className="loading">Loading...</div>
 
   return (
@@ -258,11 +302,14 @@ function Tasks() {
               <th className={`sortable ${sortColumn === 'start_date' ? 'sorted' : ''}`} onClick={() => handleSort('start_date')}>
                 Start Date {sortColumn === 'start_date' && (sortAscending ? '↑' : '↓')}
               </th>
-              <th className={`sortable ${sortColumn === 'end_date' ? 'sorted' : ''}`} onClick={() => handleSort('end_date')}>
-                Last Worked {sortColumn === 'end_date' && (sortAscending ? '↑' : '↓')}
-              </th>
-              <th>Links</th>
-              <th>Actions</th>
+               <th className={`sortable ${sortColumn === 'last_worked_date' ? 'sorted' : ''}`} onClick={() => handleSort('last_worked_date')}>
+                 Last Worked {sortColumn === 'last_worked_date' && (sortAscending ? '↑' : '↓')}
+               </th>
+               <th className={`sortable ${sortColumn === 'end_date' ? 'sorted' : ''}`} onClick={() => handleSort('end_date')}>
+                 Task Ended {sortColumn === 'end_date' && (sortAscending ? '↑' : '↓')}
+               </th>
+                <th>Links</th>
+                <th>Delete</th>
             </tr>
           </thead>
           <tbody>
@@ -272,24 +319,38 @@ function Tasks() {
                 <td>{renderEditableCell(task, 'type', task.type)}</td>
                 <td>{renderEditableCell(task, 'sub_type', task.sub_type)}</td>
                 <td>{renderEditableCell(task, 'source', task.source)}</td>
-                <td>{task.start_date ? (() => {
-                  const d = new Date(task.start_date);
-                  return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
-                })() : '-'}</td>
-                <td>{task.end_date ? (() => {
-                  const d = new Date(task.end_date);
-                  return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
-                })() : '-'}</td>
+                  <td>{task.start_date ? formatDateToCT(task.start_date) : '-'}</td>
+                  <td>{task.last_worked_date ? formatDateToCT(task.last_worked_date) : '-'}</td>
                 <td>
-                  {task.links ? (
-                    <a href={task.links} target="_blank" rel="noopener noreferrer">Link</a>
-                  ) : (
-                    '-'
-                  )}
+                  {inlineEditingId === task.id && inlineEditField === 'end_date' ? (
+                    <input
+                      autoFocus
+                      type="date"
+                      value={inlineEditValue}
+                      onChange={(e) => setInlineEditValue(e.target.value)}
+                      onBlur={() => handleSaveInlineEdit(task.id)}
+                      onKeyDown={(e) => handleKeyDown(e, task.id)}
+                      className="inline-edit-input"
+                    />
+                    ) : (
+                     <span
+                       onClick={() => handleStartInlineEdit(task, 'end_date')}
+                       className="editable-cell"
+                       title="Click to edit"
+                      >
+                        {task.end_date ? formatDateToCT(task.end_date) : '-'}
+                      </span>
+                   )}
                 </td>
+                <td>{renderLinkCell(task)}</td>
                 <td className="action-buttons">
-                  <button onClick={() => handleEditTask(task)} className="btn-small">Edit</button>
-                  <button onClick={() => handleDeleteTask(task.id)} className="btn-small btn-danger">Delete</button>
+                  <button
+                    onClick={() => handleDeleteTask(task.id)}
+                    className="btn-icon btn-delete"
+                    title="Delete task"
+                  >
+                    🗑️
+                  </button>
                 </td>
               </tr>
             ))}

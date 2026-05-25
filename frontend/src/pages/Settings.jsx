@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import { getTodayLocalDate } from '../utils'
 import '../styles/Settings.css'
 
 function Settings() {
@@ -19,9 +20,9 @@ function Settings() {
       const response = await axios.get('http://localhost:8000/api/settings/reference_date')
       let dateValue = response.data.value
 
-      // If it's today's date (default), set to Jan 1st of current year
-      const today = new Date().toISOString().split('T')[0]
-      if (dateValue === today) {
+       // If it's today's date (default), set to Jan 1st of current year
+       const today = getTodayLocalDate()
+       if (dateValue === today) {
         const year = new Date().getFullYear()
         dateValue = `${year}-01-01`
         // Auto-save the corrected default

@@ -1,3 +1,5 @@
+"""Initial database setup and utility functions."""
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.pool import NullPool

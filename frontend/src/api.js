@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { formatDate } from './utils'
 
 const API_BASE = 'http://localhost:8000/api'
 
@@ -8,7 +9,7 @@ const api = axios.create({
 
 export const activities = {
   getByDate: (date, taskId = null) => {
-    const params = { target_date: date.toISOString().split('T')[0] }
+    const params = { target_date: formatDate(date) }
     if (taskId) params.task_id = taskId
     return api.get('/activities', { params })
   },
@@ -27,14 +28,14 @@ export const tasks = {
 export const reports = {
   getTimeSentSummary: (startDate = null, endDate = null) => {
     const params = {}
-    if (startDate) params.start_date = startDate.toISOString().split('T')[0]
-    if (endDate) params.end_date = endDate.toISOString().split('T')[0]
+    if (startDate) params.start_date = formatDate(startDate)
+    if (endDate) params.end_date = formatDate(endDate)
     return api.get('/reports/time-spent-summary', { params })
   },
   getTimeSpentDaily: (startDate = null, endDate = null) => {
     const params = {}
-    if (startDate) params.start_date = startDate.toISOString().split('T')[0]
-    if (endDate) params.end_date = endDate.toISOString().split('T')[0]
+    if (startDate) params.start_date = formatDate(startDate)
+    if (endDate) params.end_date = formatDate(endDate)
     return api.get('/reports/time-spent-daily', { params })
   },
 }

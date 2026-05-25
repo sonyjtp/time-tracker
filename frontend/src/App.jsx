@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import DailyActivity from './pages/DailyActivity'
 import Tasks from './pages/Tasks'
 import TimeSpent from './pages/TimeSpent'
+import Dashboard from './pages/Dashboard'
 import Settings from './pages/Settings'
 import './App.css'
 
@@ -16,6 +17,7 @@ function App() {
             <Link to="/">Daily Activity</Link>
             <Link to="/tasks">Tasks</Link>
             <Link to="/time-spent">Time Spent</Link>
+            <Link to="/dashboard">Dashboard</Link>
             <Link to="/settings">Settings</Link>
           </div>
         </nav>
@@ -24,6 +26,7 @@ function App() {
             <Route path="/" element={<DailyActivity />} />
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/time-spent" element={<TimeSpent />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </main>

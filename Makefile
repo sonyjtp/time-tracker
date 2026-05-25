@@ -76,7 +76,7 @@ test-frontend:
 # Coverage
 coverage:
 	@echo "Generating backend coverage report (min 85%)..."
-	cd backend && python update_coverage.py
+	cd backend && python -m scripts.update_coverage
 	@echo ""
 	@echo "Generating frontend coverage report (min 85%)..."
 	cd frontend && node update-coverage.js

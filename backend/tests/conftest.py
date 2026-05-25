@@ -6,9 +6,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from database import get_db
-from main import app
-from models import Activity, Base, Task
+from app.database import get_db
+from app.main import app
+from app.models import Activity, Base, Task
 
 
 @pytest.fixture(scope="function")
