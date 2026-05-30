@@ -2,8 +2,47 @@
   padding: 20px;
 }
 
+.work-summary-panel {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem 2rem;
+  margin-bottom: 1.25rem;
+}
+
+.work-summary-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: 0.25rem;
+}
+
+.work-summary-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.work-summary-label {
+  font-size: 0.8rem;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.work-summary-divider {
+  width: 1px;
+  height: 40px;
+  background: #e0e0e0;
+  margin: 0 1rem;
+}
+
 .page-header {
-  margin-bottom: 30px;
+  margin-bottom: 15px;
 }
 
 .page-header h1 {

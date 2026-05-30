@@ -146,6 +146,21 @@ function Dashboard() {
     return Array.from(subtypes).sort()
   }
 
+  const getWorkSummary = () => {
+    const filtered = getFilteredData()
+    const workedDates = new Set(filtered.map(item => item.date))
+    const daysWorked = workedDates.size
+
+    const [sy, sm, sd] = startDate.split('-').map(Number)
+    const [ey, em, ed] = endDate.split('-').map(Number)
+    const start = new Date(sy, sm - 1, sd)
+    const end = new Date(ey, em - 1, ed)
+    const totalDays = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1
+    const daysNotWorked = totalDays - daysWorked
+
+    return { daysWorked, daysNotWorked, totalDays }
+  }
+
   const getWeeklyTotals = () => {
     const filtered = getFilteredData()
     const weeklyMap = {}
@@ -429,10 +444,6 @@ function Dashboard() {
 
   return (
     <div className="dashboard-page">
-      <div className="page-header">
-        <h1>Dashboard</h1>
-      </div>
-
       {error && <div className="error">{error}</div>}
 
       <div className="dashboard-controls">
@@ -460,16 +471,6 @@ function Dashboard() {
 
         <div className="filters-section">
           <div className="filter-group">
-            <label>Task</label>
-            <select value={selectedTask} onChange={(e) => setSelectedTask(e.target.value)}>
-              <option value="all">All</option>
-              {getAvailableTasks().map(task => (
-                <option key={task.id} value={task.id}>{task.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filter-group">
             <label>Type</label>
             <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}>
               <option value="all">All</option>
@@ -488,7 +489,38 @@ function Dashboard() {
               ))}
             </select>
           </div>
+
+          <div className="filter-group">
+            <label>Task</label>
+            <select value={selectedTask} onChange={(e) => setSelectedTask(e.target.value)}>
+              <option value="all">All</option>
+              {getAvailableTasks().map(task => (
+                <option key={task.id} value={task.id}>{task.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
+      </div>
+
+      <div className="work-summary-panel">
+        {(() => { const { daysWorked, daysNotWorked, totalDays } = getWorkSummary(); return (
+          <>
+            <div className="work-summary-stat">
+              <span className="work-summary-value">{daysWorked}</span>
+              <span className="work-summary-label">Days Worked On</span>
+            </div>
+            <div className="work-summary-divider" />
+            <div className="work-summary-stat">
+              <span className="work-summary-value">{daysNotWorked}</span>
+              <span className="work-summary-label">Days Not Worked</span>
+            </div>
+            <div className="work-summary-divider" />
+            <div className="work-summary-stat">
+              <span className="work-summary-value">{totalDays}</span>
+              <span className="work-summary-label">Total Days in Range</span>
+            </div>
+          </>
+        )})()}
       </div>
 
       <div className="view-tabs">

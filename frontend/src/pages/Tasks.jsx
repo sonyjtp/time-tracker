@@ -275,12 +275,7 @@ function Tasks() {
 
   return (
     <div className="tasks-page">
-      <div className="page-header">
-        <h1>Tasks</h1>
-        <button onClick={handleAddTask} className="btn-primary">+ Add Task</button>
-      </div>
-
-      {error && <div className="error">{error}</div>}
+o      {error && <div className="error">{error}</div>}
 
        <div className="date-range-selector">
          <div className="date-field">
@@ -302,6 +297,7 @@ function Tasks() {
            />
          </div>
          <button onClick={handleDateChange} className="btn-apply">Apply</button>
+         <button onClick={handleAddTask} className="btn-primary">+ Add Task</button>
        </div>
 
        <div className="filter-section">

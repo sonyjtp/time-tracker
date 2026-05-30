@@ -2,6 +2,25 @@
   width: 100%;
 }
 
+.daily-type-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.daily-type-filter label {
+  font-weight: 500;
+  color: #555;
+}
+
+.daily-type-filter select {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
 .date-range-selector {
   display: flex;
   gap: 1rem;

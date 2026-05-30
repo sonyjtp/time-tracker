@@ -259,11 +259,6 @@ function DailyActivity() {
 
   return (
     <div className="daily-activity">
-      <div className="page-header">
-        <h1>Daily Activity</h1>
-        <button onClick={handleAddActivity} className="btn-primary">+ Add</button>
-      </div>
-
       {error && <div className="error">{error}</div>}
 
        <div className="date-nav">
@@ -276,6 +271,7 @@ function DailyActivity() {
          />
         <button onClick={handleNextDay}>Next →</button>
         <button onClick={handleToday} className="btn-today">Today</button>
+        <button onClick={handleAddActivity} className="btn-primary">+ Add</button>
       </div>
 
       <div className="filter-section">

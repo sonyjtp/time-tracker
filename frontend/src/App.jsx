@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom'
 import DailyActivity from './pages/DailyActivity'
 import Tasks from './pages/Tasks'
 import TimeSpent from './pages/TimeSpent'
@@ -14,11 +14,11 @@ function App() {
         <nav className="navbar">
           <div className="nav-brand">Time Tracker</div>
           <div className="nav-links">
-            <Link to="/">Daily Activity</Link>
-            <Link to="/tasks">Tasks</Link>
-            <Link to="/time-spent">Time Spent</Link>
-            <Link to="/dashboard">Dashboard</Link>
-            <Link to="/settings">Settings</Link>
+            <NavLink to="/" end>Daily Activity</NavLink>
+            <NavLink to="/tasks">Tasks</NavLink>
+            <NavLink to="/time-spent">Time Spent</NavLink>
+            <NavLink to="/dashboard">Dashboard</NavLink>
+            <NavLink to="/settings">Settings</NavLink>
           </div>
         </nav>
         <main className="main-content">

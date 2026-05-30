@@ -18,6 +18,7 @@ function TimeSpent() {
   const [selectedTask, setSelectedTask] = useState('')
   const [selectedType, setSelectedType] = useState('')
   const [selectedSubtype, setSelectedSubtype] = useState('')
+  const [selectedDailyType, setSelectedDailyType] = useState('Technical')
 
   useEffect(() => {
     loadReferenceDate()
@@ -152,13 +153,15 @@ function TimeSpent() {
       const startDateObj = new Date(startYear, startMonth - 1, startDay)
       const endDateObj = new Date(endYear, endMonth - 1, endDay)
 
-      // Filter daily data to only include dates within the selected range
       const filteredDailyData = dailyData.filter(item => {
-        // Parse the item date as a local date
         const [itemYear, itemMonth, itemDay] = item.date.split('-').map(Number)
         const itemDate = new Date(itemYear, itemMonth - 1, itemDay)
-        const inRange = itemDate >= startDateObj && itemDate <= endDateObj
-        return inRange
+        if (itemDate < startDateObj || itemDate > endDateObj) return false
+        if (selectedDailyType) {
+          const taskInfo = getTaskInfo(item.task_id)
+          if (!taskInfo || taskInfo.type !== selectedDailyType) return false
+        }
+        return true
       })
 
       // Group daily data by date
@@ -225,9 +228,12 @@ function TimeSpent() {
    }
 
     const getDailyTotals = () => {
-      // Group all daily data by date and sum the hours
       const dailyTotals = {}
       dailyData.forEach(item => {
+        if (selectedDailyType) {
+          const taskInfo = getTaskInfo(item.task_id)
+          if (!taskInfo || taskInfo.type !== selectedDailyType) return
+        }
         if (!dailyTotals[item.date]) {
           dailyTotals[item.date] = 0
         }
@@ -390,10 +396,6 @@ function TimeSpent() {
 
   return (
     <div className="time-spent-page">
-      <div className="page-header">
-        <h1>Time Spent</h1>
-      </div>
-
       {error && <div className="error">{error}</div>}
 
       <div className="date-range-selector">
@@ -599,6 +601,19 @@ function TimeSpent() {
 
         {activeView === 'daily' && (
           <div className="daily-view">
+            <div className="daily-type-filter">
+              <label htmlFor="daily-type-select">Type:</label>
+              <select
+                id="daily-type-select"
+                value={selectedDailyType}
+                onChange={(e) => setSelectedDailyType(e.target.value)}
+              >
+                <option value="">All</option>
+                {getAvailableTypes().map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
             {summaryData.length === 0 ? (
               <div className="empty-state">No time spent data</div>
             ) : (
@@ -642,6 +657,19 @@ function TimeSpent() {
 
         {activeView === 'dailyAverage' && (
           <div className="daily-average-view">
+            <div className="daily-type-filter">
+              <label htmlFor="daily-avg-type-select">Type:</label>
+              <select
+                id="daily-avg-type-select"
+                value={selectedDailyType}
+                onChange={(e) => setSelectedDailyType(e.target.value)}
+              >
+                <option value="">All</option>
+                {getAvailableTypes().map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
             {dailyData.length === 0 ? (
               <div className="empty-state">No time spent data</div>
             ) : (

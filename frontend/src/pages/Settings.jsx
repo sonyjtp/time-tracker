@@ -20,12 +20,14 @@ function Settings() {
       const response = await axios.get('http://localhost:8000/api/settings/reference_date')
       let dateValue = response.data.value
 
-       // If it's today's date (default), set to Jan 1st of current year
+       // If stored value is today or Jan 1st of any year, default to first of current month
        const today = getTodayLocalDate()
-       if (dateValue === today) {
-        const year = new Date().getFullYear()
-        dateValue = `${year}-01-01`
-        // Auto-save the corrected default
+       const isStaleDefault = dateValue === today || /^\d{4}-01-01$/.test(dateValue)
+       if (isStaleDefault) {
+        const now = new Date()
+        const year = now.getFullYear()
+        const month = String(now.getMonth() + 1).padStart(2, '0')
+        dateValue = `${year}-${month}-01`
         await axios.put('http://localhost:8000/api/settings/reference_date', {
           value: dateValue
         })
@@ -64,10 +66,6 @@ function Settings() {
 
   return (
     <div className="settings-page">
-      <div className="page-header">
-        <h1>Settings</h1>
-      </div>
-
       {error && <div className="error">{error}</div>}
       {success && <div className="success">Settings saved successfully!</div>}
 
