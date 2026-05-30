@@ -1,5 +1,17 @@
 # Time Tracker
 
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Node.js 18+](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-orange.svg)](https://fastapi.tiangolo.com/)
+[![React 18](https://img.shields.io/badge/React-18+-61DAFB.svg)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-5.0+-646CFF.svg)](https://vitejs.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-336791.svg)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](https://www.docker.com/)
+[![ESLint](https://img.shields.io/badge/ESLint-Configured-4B3B8A.svg)](#)
+[![Code Quality](https://img.shields.io/badge/Code%20Quality-A-success.svg)](#)
+[![Pre-commit Checks](https://img.shields.io/badge/Pre%E2%80%90commit-Enabled-blue.svg)](#)
+[![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A web-based time tracking app built with FastAPI, React, and PostgreSQL.
 
 ## Quick Start
